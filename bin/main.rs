@@ -15,19 +15,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-type CodeValue<'a> = (i16, &'a str);
+#[derive(Debug, Clone, Copy)]
+struct CodeValue<'a> {
+    pub code: i16,
+    pub value: &'a str,
+}
 
 fn code_value_pairs(s: &str) -> Result<Vec<CodeValue>, std::num::ParseIntError> {
     s.lines()
         .collect::<Vec<_>>()
         .chunks(2)
-        .map(|chunk| chunk[0].trim().parse::<i16>().map(|code| (code, chunk[1])))
+        .map(|chunk| {
+            let value = chunk[1];
+            chunk[0]
+                .trim()
+                .parse::<i16>()
+                .map(|code| CodeValue { code, value })
+        })
         .collect()
 }
 
 #[derive(Debug)]
 struct Node<'a> {
-    pub entity_type: &'a str,
+    pub node_type: &'a str,
     pub code_values: &'a [CodeValue<'a>],
     pub nodes: Vec<Self>,
 }
@@ -38,7 +48,7 @@ impl<'a> Node<'a> {
         }
         println!(
             "{}: code_values.len() = {}",
-            self.entity_type,
+            self.node_type,
             self.code_values.len()
         );
         for node in &self.nodes {
@@ -50,20 +60,20 @@ impl<'a> Node<'a> {
     }
     fn parse_node(code_values: &'a [CodeValue<'a>], index: usize) -> Option<(Self, usize)> {
         (index..code_values.len())
-            .find(|i| code_values[*i].0 == 0)
+            .find(|i| code_values[*i].code == 0)
             .and_then(|start| {
-                let entity_type = code_values[start].1;
-                if Self::CONTAINER_TYPES.contains(&entity_type) {
+                let node_type = code_values[start].value;
+                if Self::CONTAINER_TYPES.contains(&node_type) {
                     Self::parse_nodes(code_values, start + 1).map(|(nodes, end)| {
                         let node = Self {
-                            entity_type,
+                            node_type,
                             code_values: &code_values[start + 1..end],
                             nodes,
                         };
                         (node, end)
                     })
                 } else {
-                    Self::parse_entity(entity_type, code_values, start + 1)
+                    Self::parse_entity(node_type, code_values, start + 1)
                 }
             })
     }
@@ -73,28 +83,28 @@ impl<'a> Node<'a> {
     ) -> Option<(Vec<Self>, usize)> {
         let mut nodes = vec![];
         while let Some((node, i)) = Self::parse_node(code_values, index) {
-            if node.entity_type.contains("END") {
+            if node.node_type.contains("END") {
                 return Some((nodes, i));
             }
             index = i;
             nodes.push(node);
         }
-        if code_values[index] == (0, "EOF") {
+        if code_values[index].value == "EOF" {
             Some((nodes, index))
         } else {
             None
         }
     }
     fn parse_entity(
-        entity_type: &'a str,
+        node_type: &'a str,
         code_values: &'a [CodeValue<'a>],
         start: usize,
     ) -> Option<(Self, usize)> {
         (start..code_values.len())
-            .find(|i| code_values[*i].0 == 0)
+            .find(|i| code_values[*i].code == 0)
             .map(|end| {
                 let entity = Self {
-                    entity_type,
+                    node_type,
                     code_values: &code_values[start..end],
                     nodes: vec![],
                 };
