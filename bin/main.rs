@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for node in &nodes {
         node.print(0);
     }
-    let drawing = Drawing::parse(&nodes)?;
+    let drawing = Drawing::parse(&nodes);
     println!("{:?}", drawing);
     Ok(())
 }

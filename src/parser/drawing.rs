@@ -5,7 +5,7 @@ pub struct Drawing<'a> {
     pub entities: Vec<EntityNode<'a>>,
 }
 impl<'a> Drawing<'a> {
-    pub fn parse(nodes: &'a [DxfNode<'a>]) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn parse(nodes: &'a [DxfNode<'a>]) -> Self {
         let mut drawing = Self {
             entities: Vec::new(),
         };
@@ -27,7 +27,14 @@ impl<'a> Drawing<'a> {
                 }
             }
         }
-        Ok(drawing)
+        drawing
+    }
+}
+impl<'a> From<Drawing<'a>> for crate::Drawing {
+    fn from(drawing: Drawing<'a>) -> Self {
+        Self {
+            entities: drawing.entities.into_iter().map(Into::into).collect(),
+        }
     }
 }
 
@@ -38,6 +45,11 @@ pub struct SourceAndTarget<'a, T> {
 }
 
 pub type EntityNode<'a> = SourceAndTarget<'a, crate::EntityNode>;
+impl<'a> From<EntityNode<'a>> for crate::EntityNode {
+    fn from(x: EntityNode<'a>) -> Self {
+        x.target
+    }
+}
 impl<'a> EntityNode<'a> {
     pub fn parse(source: &'a DxfNode<'a>) -> Self {
         let target = crate::EntityNode {

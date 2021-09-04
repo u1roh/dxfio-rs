@@ -2,6 +2,17 @@
 pub struct Drawing {
     pub entities: Vec<EntityNode>,
 }
+impl Drawing {
+    pub fn parse_str(s: &str) -> Result<Self, std::num::ParseIntError> {
+        crate::parser::DxfAtom::parse(s).map(|atoms| Self::parse_atoms(&atoms))
+    }
+    pub fn parse_atoms(atoms: &[crate::parser::DxfAtom]) -> Self {
+        Self::parse_nodes(&crate::parser::DxfNode::parse(atoms))
+    }
+    pub fn parse_nodes(nodes: &[crate::parser::DxfNode]) -> Self {
+        crate::parser::Drawing::parse(nodes).into()
+    }
+}
 
 #[derive(Debug, Default, Clone)]
 pub struct EntityHeader {
