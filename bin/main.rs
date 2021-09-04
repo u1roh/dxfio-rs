@@ -14,7 +14,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for node in &nodes {
         node.print(0);
     }
-    let drawing = ParDrawing::parse(&nodes);
-    println!("{:?}", drawing);
+    //let drawing = ParDrawing::parse(&nodes);
+    let drawing = dxfio::Drawing::parse_nodes(&nodes);
+    // println!("{:?}", drawing);
+    let yaml = serde_yaml::to_string(&drawing)?;
+    println!("{}", yaml);
     Ok(())
 }

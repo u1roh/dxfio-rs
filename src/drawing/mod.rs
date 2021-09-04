@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
     pub entities: Vec<EntityNode>,
 }
@@ -14,7 +14,7 @@ impl Drawing {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EntityHeader {
     pub handle: u32,                     // 5    String
     pub space: Space,                    // 67   i16     ModelSpace
@@ -30,7 +30,7 @@ pub struct EntityHeader {
     pub shadow_mode: Option<ShadowMode>, // 284  i16
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum LineType {
     ByLayer,
     ByBlock,
@@ -39,7 +39,7 @@ pub enum LineType {
     Other(String),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum ShadowMode {
     CastsAndReceivesShadows = 0,
     CastsShadows = 1,
@@ -47,7 +47,7 @@ pub enum ShadowMode {
     IgnoresShadows = 3,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum ColorNumber {
     ByLayer,
     ByEntity,
@@ -56,32 +56,32 @@ pub enum ColorNumber {
     Number(u8),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Rgb {
     pub r: u8,
     pub g: u8,
     pub b: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Space {
     ModelSpace,
     PaperSpace,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EntityNode {
     pub header: EntityHeader,
     pub entity: Entity,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Entity {
     Line(Line),
     Unknown(crate::DxfNode),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Line {
     pub p1: [f64; 3],
     pub p2: [f64; 3],
