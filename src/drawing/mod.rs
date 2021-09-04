@@ -4,12 +4,12 @@ pub struct Drawing {
 }
 impl Drawing {
     pub fn parse_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-        crate::parser::DxfAtom::parse(s).map(|atoms| Self::parse_atoms(&atoms))
+        crate::parser::ParAtom::parse(s).map(|atoms| Self::parse_atoms(&atoms))
     }
-    pub fn parse_atoms(atoms: &[crate::parser::DxfAtom]) -> Self {
-        Self::parse_nodes(&crate::parser::DxfNode::parse(atoms))
+    pub fn parse_atoms(atoms: &[crate::parser::ParAtom]) -> Self {
+        Self::parse_nodes(&crate::parser::ParNode::parse(atoms))
     }
-    pub fn parse_nodes(nodes: &[crate::parser::DxfNode]) -> Self {
+    pub fn parse_nodes(nodes: &[crate::parser::ParNode]) -> Self {
         crate::parser::ParDrawing::parse(nodes).into()
     }
 }

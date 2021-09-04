@@ -1,13 +1,13 @@
-use super::DxfAtom;
+use super::ParAtom;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DxfNode<'a> {
+pub struct ParNode<'a> {
     pub node_type: &'a str,
-    pub atoms: &'a [DxfAtom<'a>],
+    pub atoms: &'a [ParAtom<'a>],
     pub nodes: Vec<Self>,
 }
-impl<'a> DxfNode<'a> {
-    pub fn parse(atoms: &'a [DxfAtom<'a>]) -> Vec<Self> {
+impl<'a> ParNode<'a> {
+    pub fn parse(atoms: &'a [ParAtom<'a>]) -> Vec<Self> {
         NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
     pub fn find(&self, code: i16) -> Option<&str> {
@@ -41,10 +41,10 @@ impl<'a> DxfNode<'a> {
 }
 
 struct NodeParser<'a> {
-    atoms: &'a [DxfAtom<'a>],
+    atoms: &'a [ParAtom<'a>],
 }
 impl<'a> NodeParser<'a> {
-    fn parse_nodes(&self, mut start: usize) -> Option<(Vec<DxfNode<'a>>, usize)> {
+    fn parse_nodes(&self, mut start: usize) -> Option<(Vec<ParNode<'a>>, usize)> {
         let mut nodes = vec![];
         while let Some((node, end)) = self.parse_node(start) {
             if node.node_type.contains("END") {
@@ -59,7 +59,7 @@ impl<'a> NodeParser<'a> {
             None
         }
     }
-    fn parse_node(&self, start: usize) -> Option<(DxfNode<'a>, usize)> {
+    fn parse_node(&self, start: usize) -> Option<(ParNode<'a>, usize)> {
         const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
         (start..self.atoms.len())
             .find(|i| self.atoms[*i].code == 0)
@@ -72,9 +72,9 @@ impl<'a> NodeParser<'a> {
                 }
             })
     }
-    fn parse_container(&self, node_type: &'a str, start: usize) -> Option<(DxfNode<'a>, usize)> {
+    fn parse_container(&self, node_type: &'a str, start: usize) -> Option<(ParNode<'a>, usize)> {
         self.parse_nodes(start).map(|(nodes, end)| {
-            let node = DxfNode {
+            let node = ParNode {
                 node_type,
                 atoms: &self.atoms[start..end],
                 nodes,
@@ -82,11 +82,11 @@ impl<'a> NodeParser<'a> {
             (node, end)
         })
     }
-    fn parse_element(&self, node_type: &'a str, start: usize) -> Option<(DxfNode<'a>, usize)> {
+    fn parse_element(&self, node_type: &'a str, start: usize) -> Option<(ParNode<'a>, usize)> {
         (start..self.atoms.len())
             .find(|i| self.atoms[*i].code == 0)
             .map(|end| {
-                let entity = DxfNode {
+                let entity = ParNode {
                     node_type,
                     atoms: &self.atoms[start..end],
                     nodes: vec![],

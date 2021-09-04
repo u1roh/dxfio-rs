@@ -1,10 +1,10 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct DxfAtom<'a> {
+pub struct ParAtom<'a> {
     pub code: i16,
     pub value: &'a str,
 }
 
-impl<'a> DxfAtom<'a> {
+impl<'a> ParAtom<'a> {
     pub fn parse(s: &'a str) -> Result<Vec<Self>, std::num::ParseIntError> {
         s.lines()
             .collect::<Vec<_>>()

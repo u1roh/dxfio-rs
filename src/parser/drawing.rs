@@ -1,4 +1,4 @@
-use super::DxfNode;
+use super::ParNode;
 use crate::*;
 
 #[derive(Debug, Clone)]
@@ -6,7 +6,7 @@ pub struct ParDrawing<'a> {
     pub entities: Vec<ParEntityNode<'a>>,
 }
 impl<'a> ParDrawing<'a> {
-    pub fn parse(nodes: &'a [DxfNode<'a>]) -> Self {
+    pub fn parse(nodes: &'a [ParNode<'a>]) -> Self {
         let mut drawing = Self {
             entities: Vec::new(),
         };
@@ -41,7 +41,7 @@ impl<'a> From<ParDrawing<'a>> for Drawing {
 
 #[derive(Debug, Clone)]
 pub struct SourceAndTarget<'a, T> {
-    pub source: &'a DxfNode<'a>,
+    pub source: &'a ParNode<'a>,
     pub target: T,
 }
 
@@ -52,7 +52,7 @@ impl<'a> From<ParEntityNode<'a>> for EntityNode {
     }
 }
 impl<'a> ParEntityNode<'a> {
-    pub fn parse(source: &'a DxfNode<'a>) -> Self {
+    pub fn parse(source: &'a ParNode<'a>) -> Self {
         let target = EntityNode {
             header: Default::default(),
             entity: match source.node_type {

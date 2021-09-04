@@ -1,4 +1,4 @@
-use bare_dxf::parser::*;
+use dxfio::parser::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
@@ -7,9 +7,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bytes = std::fs::read(&args[1])?;
     let (s, _, _) = encoding_rs::SHIFT_JIS.decode(&bytes);
     // println!("s = {}", s);
-    let atoms = DxfAtom::parse(&s)?;
+    let atoms = ParAtom::parse(&s)?;
     // println!("pairs = {:?}", pairs);
-    let nodes = DxfNode::parse(&atoms);
+    let nodes = ParNode::parse(&atoms);
     println!("nodes.len() = {}", nodes.len());
     for node in &nodes {
         node.print(0);
