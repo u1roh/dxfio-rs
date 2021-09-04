@@ -79,26 +79,19 @@ impl<'a> NodeParser<'a> {
     }
     fn parse_node(&self, start: usize) -> Option<(ParNode<'a>, usize)> {
         const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
-        (start..self.atoms.len())
-            .find(|i| self.atoms[*i].code == 0)
-            .and_then(|start| {
-                let node_type = self.atoms[start].value;
-                if CONTAINER_TYPES.contains(&node_type) {
-                    self.parse_container(node_type, start + 1)
-                } else {
-                    self.parse_element(node_type, start + 1)
-                }
-            })
+        assert_eq!(self.atoms[start].code, 0);
+        let node_type = self.atoms[start].value;
+        if CONTAINER_TYPES.contains(&node_type) {
+            self.parse_container(node_type, start + 1)
+        } else {
+            self.parse_element(node_type, start + 1)
+        }
     }
     fn parse_container(&self, node_type: &'a str, start: usize) -> Option<(ParNode<'a>, usize)> {
-        self.parse_nodes(start).map(|(nodes, end)| {
-            let node = ParNode {
-                node_type,
-                atoms: &self.atoms[start..end],
-                nodes,
-            };
-            (node, end)
-        })
+        let (mut node, start) = self.parse_element(node_type, start)?;
+        let (nodes, end) = self.parse_nodes(start)?;
+        node.nodes = nodes;
+        Some((node, end))
     }
     fn parse_element(&self, node_type: &'a str, start: usize) -> Option<(ParNode<'a>, usize)> {
         (start..self.atoms.len())

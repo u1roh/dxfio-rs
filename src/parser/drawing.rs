@@ -81,7 +81,28 @@ impl<'a> ParBlockNode<'a> {
             entities: Vec::new(),
         };
         for atom in source.atoms {
-            unimplemented!()
+            match atom.code {
+                8 => target.layer = atom.value.to_owned(),
+                2 | 3 => target.block_name = atom.value.to_owned(),
+                70 => {
+                    let flags = atom.value.parse::<u8>().unwrap_or_default();
+                    target.block_flags = BlockFlags {
+                        is_anonymous: (flags & 0b0000_0001) != 0,
+                        has_non_constant_attribute_definitions: (flags & 0b0000_0010) != 0,
+                        is_xref: (flags & 0b0000_0100) != 0,
+                        is_xref_overlay: (flags & 0b0000_1000) != 0,
+                        is_externally_dependent: (flags & 0b0001_0000) != 0,
+                        is_resolved_xref_or_dependent_of_xref: (flags & 0b0010_0000) != 0,
+                        is_referenced_xref: (flags & 0b0100_0000) != 0,
+                    };
+                }
+                10 => target.base_point[0] = atom.value.parse().unwrap_or_default(),
+                20 => target.base_point[1] = atom.value.parse().unwrap_or_default(),
+                30 => target.base_point[2] = atom.value.parse().unwrap_or_default(),
+                1 => target.xref_path_name = atom.value.to_owned(),
+                4 => target.description = atom.value.to_owned(),
+                _ => {}
+            }
         }
         target.entities = source
             .nodes
