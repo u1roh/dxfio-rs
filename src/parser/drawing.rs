@@ -3,11 +3,13 @@ use crate::*;
 
 #[derive(Debug, Clone)]
 pub struct ParDrawing<'a> {
+    pub blocks: Vec<ParBlockNode<'a>>,
     pub entities: Vec<ParEntityNode<'a>>,
 }
 impl<'a> ParDrawing<'a> {
     pub fn parse(nodes: &'a [ParNode<'a>]) -> Self {
         let mut drawing = Self {
+            blocks: Vec::new(),
             entities: Vec::new(),
         };
         for section in nodes {
@@ -15,7 +17,9 @@ impl<'a> ParDrawing<'a> {
                 Some("HEADER") => {}
                 Some("CLASSES") => {}
                 Some("TABLES") => {}
-                Some("BLOCKS") => {}
+                Some("BLOCKS") => {
+                    drawing.blocks = section.nodes.iter().map(ParBlockNode::parse).collect();
+                }
                 Some("ENTITIES") => {
                     drawing.entities = section.nodes.iter().map(ParEntityNode::parse).collect();
                 }
@@ -34,6 +38,7 @@ impl<'a> ParDrawing<'a> {
 impl<'a> From<ParDrawing<'a>> for Drawing {
     fn from(drawing: ParDrawing<'a>) -> Self {
         Self {
+            blocks: drawing.blocks.into_iter().map(|b| b.target).collect(),
             entities: drawing.entities.into_iter().map(|e| e.target).collect(),
         }
     }
@@ -58,6 +63,32 @@ impl<'a> ParEntityNode<'a> {
                 _ => Entity::Unknown(source.into()),
             },
         };
+        Self { source, target }
+    }
+}
+
+pub type ParBlockNode<'a> = SourceAndTarget<'a, BlockNode>;
+impl<'a> ParBlockNode<'a> {
+    pub fn parse(source: &'a ParNode<'a>) -> Self {
+        let mut target = BlockNode {
+            handle: 0,
+            layer: String::default(),
+            block_name: String::default(),
+            block_flags: BlockFlags::default(),
+            base_point: [0.0, 0.0, 0.0],
+            xref_path_name: String::default(),
+            description: String::default(),
+            entities: Vec::new(),
+        };
+        for atom in source.atoms {
+            unimplemented!()
+        }
+        target.entities = source
+            .nodes
+            .iter()
+            .map(ParEntityNode::parse)
+            .map(|e| e.target)
+            .collect();
         Self { source, target }
     }
 }

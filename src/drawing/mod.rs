@@ -1,5 +1,6 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
+    pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
 }
 impl Drawing {
@@ -85,4 +86,27 @@ pub enum Entity {
 pub struct Line {
     pub p1: [f64; 3],
     pub p2: [f64; 3],
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct BlockNode {
+    pub handle: u32,             // 5
+    pub layer: String,           // 8
+    pub block_name: String,      // 2, 3
+    pub block_flags: BlockFlags, // 70
+    pub base_point: [f64; 3],    // 10, 20, 30
+    pub xref_path_name: String,  // 1
+    pub description: String,     // 4
+    pub entities: Vec<EntityNode>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+pub struct BlockFlags {
+    pub is_anonymous: bool,
+    pub has_non_constant_attribute_definitions: bool,
+    pub is_xref: bool, // xref = external reference
+    pub is_xref_overlay: bool,
+    pub is_externally_dependent: bool,
+    pub is_resolved_xref_or_dependent_of_xref: bool,
+    pub is_referenced_xref: bool,
 }
