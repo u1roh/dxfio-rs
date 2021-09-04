@@ -34,7 +34,7 @@ impl<'a> ParDrawing<'a> {
 impl<'a> From<ParDrawing<'a>> for Drawing {
     fn from(drawing: ParDrawing<'a>) -> Self {
         Self {
-            entities: drawing.entities.into_iter().map(Into::into).collect(),
+            entities: drawing.entities.into_iter().map(|e| e.target).collect(),
         }
     }
 }
@@ -46,11 +46,6 @@ pub struct SourceAndTarget<'a, T> {
 }
 
 pub type ParEntityNode<'a> = SourceAndTarget<'a, EntityNode>;
-impl<'a> From<ParEntityNode<'a>> for EntityNode {
-    fn from(x: ParEntityNode<'a>) -> Self {
-        x.target
-    }
-}
 impl<'a> ParEntityNode<'a> {
     pub fn parse(source: &'a ParNode<'a>) -> Self {
         let target = EntityNode {
@@ -60,14 +55,7 @@ impl<'a> ParEntityNode<'a> {
                     p1: source.get_point(0),
                     p2: source.get_point(1),
                 }),
-                _ => Entity::Unknown {
-                    node_type: source.node_type.to_owned(),
-                    atoms: source
-                        .atoms
-                        .iter()
-                        .map(|atom| (atom.code, atom.value.to_owned()))
-                        .collect(),
-                },
+                _ => Entity::Unknown(source.into()),
             },
         };
         Self { source, target }

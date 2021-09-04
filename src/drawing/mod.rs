@@ -40,10 +40,7 @@ pub struct EntityNode {
 #[derive(Debug, Clone)]
 pub enum Entity {
     Line(Line),
-    Unknown {
-        node_type: String,
-        atoms: Vec<(i16, String)>,
-    },
+    Unknown(crate::DxfNode),
 }
 
 #[derive(Debug, Clone)]

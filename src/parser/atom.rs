@@ -19,3 +19,12 @@ impl<'a> ParAtom<'a> {
             .collect()
     }
 }
+
+impl<'a> From<ParAtom<'a>> for crate::DxfAtom {
+    fn from(atom: ParAtom<'a>) -> Self {
+        Self {
+            code: atom.code,
+            value: atom.value.to_owned(),
+        }
+    }
+}

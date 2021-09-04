@@ -39,6 +39,24 @@ impl<'a> ParNode<'a> {
         }
     }
 }
+impl<'a> From<ParNode<'a>> for crate::DxfNode {
+    fn from(node: ParNode<'a>) -> Self {
+        Self {
+            node_type: node.node_type.to_owned(),
+            atoms: node.atoms.iter().copied().map(Into::into).collect(),
+            nodes: node.nodes.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+impl<'a> From<&ParNode<'a>> for crate::DxfNode {
+    fn from(node: &ParNode<'a>) -> Self {
+        Self {
+            node_type: node.node_type.to_owned(),
+            atoms: node.atoms.iter().copied().map(Into::into).collect(),
+            nodes: node.nodes.iter().map(Into::into).collect(),
+        }
+    }
+}
 
 struct NodeParser<'a> {
     atoms: &'a [ParAtom<'a>],
