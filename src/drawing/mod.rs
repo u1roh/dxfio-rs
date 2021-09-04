@@ -14,21 +14,59 @@ impl Drawing {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct EntityHeader {
-    pub handle: u32,
-    pub is_in_paper_space: bool,
-    pub layer: String,
-    pub line_type_name: String,
-    pub elevation: f64,
-    pub lineweight_enum_value: i16,
-    pub line_type_scale: f64,
-    pub is_visible: bool,
-    pub image_byte_count: i32,
-    pub preview_image_data: Vec<Vec<u8>>,
-    pub color_24_bit: i32,
-    pub color_name: String,
-    pub transparency: i32,
+    pub handle: u32,                     // 5    String
+    pub space: Space,                    // 67   i16     ModelSpace
+    pub layer: String,                   // 8    String
+    pub line_type: LineType,             // 6    String  ByLayer
+    pub color_number: ColorNumber,       // 62   i16     ByLayer
+    pub lineweight: Option<i16>,         // 370  i16
+    pub line_type_scale: Option<f64>,    // 48   f64
+    pub is_visible: bool,                // 60   i16     true
+    pub color_rgb: Option<Rgb>,          // 420  i32
+    pub color_name: Option<String>,      // 430  String
+    pub transparency: Option<i32>,       // 440  i32
+    pub shadow_mode: Option<ShadowMode>, // 284  i16
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LineType {
+    ByLayer,
+    ByBlock,
+    Continuous,
+    Dashed,
+    Other(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ShadowMode {
+    CastsAndReceivesShadows = 0,
+    CastsShadows = 1,
+    ReceivesShadows = 2,
+    IgnoresShadows = 3,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ColorNumber {
+    ByLayer,
+    ByEntity,
+    ByBlock,
+    TurnedOff,
+    Number(u8),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Rgb {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Space {
+    ModelSpace,
+    PaperSpace,
 }
 
 #[derive(Debug, Clone)]

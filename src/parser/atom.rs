@@ -10,7 +10,7 @@ impl<'a> ParAtom<'a> {
             .collect::<Vec<_>>()
             .chunks(2)
             .map(|chunk| {
-                let value = chunk[1];
+                let value = chunk[1].trim();
                 chunk[0]
                     .trim()
                     .parse::<i16>()
