@@ -10,7 +10,7 @@ impl Drawing {
         Self::parse_nodes(&crate::parser::DxfNode::parse(atoms))
     }
     pub fn parse_nodes(nodes: &[crate::parser::DxfNode]) -> Self {
-        crate::parser::Drawing::parse(nodes).into()
+        crate::parser::ParDrawing::parse(nodes).into()
     }
 }
 
