@@ -1,20 +1,14 @@
 use super::DxfAtom;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DxfNode<'a> {
     pub node_type: &'a str,
     pub atoms: &'a [DxfAtom<'a>],
     pub nodes: Vec<Self>,
 }
 impl<'a> DxfNode<'a> {
-    pub fn print(&self, indent: usize) {
-        for _ in 0..indent {
-            print!("  ");
-        }
-        println!("{}: atoms.len() = {}", self.node_type, self.atoms.len());
-        for node in &self.nodes {
-            node.print(indent + 1);
-        }
+    pub fn parse(atoms: &'a [DxfAtom<'a>]) -> Vec<Self> {
+        NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
     pub fn find(&self, code: i16) -> Option<&str> {
         self.atoms
@@ -28,8 +22,21 @@ impl<'a> DxfNode<'a> {
     pub fn get_or_default<T: std::str::FromStr + Default>(&self, code: i16) -> T {
         self.get(code).unwrap_or_default()
     }
-    pub fn parse(atoms: &'a [DxfAtom<'a>]) -> Vec<Self> {
-        NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
+    pub fn get_point(&self, i: usize) -> [f64; 3] {
+        [
+            self.get_or_default(10 + i as i16),
+            self.get_or_default(20 + i as i16),
+            self.get_or_default(30 + i as i16),
+        ]
+    }
+    pub fn print(&self, indent: usize) {
+        for _ in 0..indent {
+            print!("  ");
+        }
+        println!("{}: atoms.len() = {}", self.node_type, self.atoms.len());
+        for node in &self.nodes {
+            node.print(indent + 1);
+        }
     }
 }
 

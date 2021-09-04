@@ -1,5 +1,8 @@
 pub mod parser;
 
+mod drawing;
+pub use drawing::*;
+
 #[cfg(test)]
 mod tests {
     #[test]
