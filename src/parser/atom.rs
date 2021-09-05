@@ -18,6 +18,26 @@ impl<'a> ParAtom<'a> {
             })
             .collect()
     }
+    pub fn get<T: std::str::FromStr>(&self) -> Option<T>
+    where
+        T::Err: std::fmt::Display,
+    {
+        match self.value.parse() {
+            Ok(value) => Some(value),
+            Err(e) => {
+                log::error!("{} @ {:?}", e, self);
+                None
+            }
+        }
+    }
+    pub fn get_to<T: std::str::FromStr>(&self, dst: &mut T)
+    where
+        T::Err: std::fmt::Display,
+    {
+        if let Some(value) = self.get() {
+            *dst = value;
+        }
+    }
 }
 
 impl<'a> From<ParAtom<'a>> for crate::DxfAtom {

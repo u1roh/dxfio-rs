@@ -15,3 +15,11 @@ pub struct DxfNode {
     pub atoms: Vec<DxfAtom>,
     pub nodes: Vec<Self>,
 }
+
+#[derive(Debug, thiserror::Error)]
+pub enum DxfParseError {
+    #[error(transparent)]
+    ParseIntError(#[from] std::num::ParseIntError),
+}
+
+pub type DxfParseResult<T> = Result<T, DxfParseError>;

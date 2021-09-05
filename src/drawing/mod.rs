@@ -4,8 +4,9 @@ pub struct Drawing {
     pub entities: Vec<EntityNode>,
 }
 impl Drawing {
-    pub fn parse_str(s: &str) -> Result<Self, std::num::ParseIntError> {
-        crate::parser::ParAtom::parse(s).map(|atoms| Self::parse_atoms(&atoms))
+    pub fn parse_str(s: &str) -> crate::DxfParseResult<Self> {
+        let atoms = crate::parser::ParAtom::parse(s)?;
+        Ok(Self::parse_atoms(&atoms))
     }
     pub fn parse_atoms(atoms: &[crate::parser::ParAtom]) -> Self {
         Self::parse_nodes(&crate::parser::ParNode::parse(atoms))
@@ -29,6 +30,7 @@ pub struct EntityHeader {
     pub color_name: Option<String>,      // 430  String
     pub transparency: Option<i32>,       // 440  i32
     pub shadow_mode: Option<ShadowMode>, // 284  i16
+    pub extras: Vec<crate::DxfAtom>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]

@@ -85,20 +85,21 @@ impl<'a> ParBlockNode<'a> {
                 8 => target.layer = atom.value.to_owned(),
                 2 | 3 => target.block_name = atom.value.to_owned(),
                 70 => {
-                    let flags = atom.value.parse::<u8>().unwrap_or_default();
-                    target.block_flags = BlockFlags {
-                        is_anonymous: (flags & 0b0000_0001) != 0,
-                        has_non_constant_attribute_definitions: (flags & 0b0000_0010) != 0,
-                        is_xref: (flags & 0b0000_0100) != 0,
-                        is_xref_overlay: (flags & 0b0000_1000) != 0,
-                        is_externally_dependent: (flags & 0b0001_0000) != 0,
-                        is_resolved_xref_or_dependent_of_xref: (flags & 0b0010_0000) != 0,
-                        is_referenced_xref: (flags & 0b0100_0000) != 0,
-                    };
+                    if let Some(flags) = atom.get::<u8>() {
+                        target.block_flags = BlockFlags {
+                            is_anonymous: (flags & 0b0000_0001) != 0,
+                            has_non_constant_attribute_definitions: (flags & 0b0000_0010) != 0,
+                            is_xref: (flags & 0b0000_0100) != 0,
+                            is_xref_overlay: (flags & 0b0000_1000) != 0,
+                            is_externally_dependent: (flags & 0b0001_0000) != 0,
+                            is_resolved_xref_or_dependent_of_xref: (flags & 0b0010_0000) != 0,
+                            is_referenced_xref: (flags & 0b0100_0000) != 0,
+                        };
+                    }
                 }
-                10 => target.base_point[0] = atom.value.parse().unwrap_or_default(),
-                20 => target.base_point[1] = atom.value.parse().unwrap_or_default(),
-                30 => target.base_point[2] = atom.value.parse().unwrap_or_default(),
+                10 => atom.get_to(&mut target.base_point[0]),
+                20 => atom.get_to(&mut target.base_point[1]),
+                30 => atom.get_to(&mut target.base_point[2]),
                 1 => target.xref_path_name = atom.value.to_owned(),
                 4 => target.description = atom.value.to_owned(),
                 _ => {}
@@ -128,10 +129,12 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
         color_name: None,                   // 430  String
         transparency: None,                 // 440  i32
         shadow_mode: None,                  // 284  i16
+        extras: vec![],
     };
-    for atom in source.atoms {
+    // read atoms until subclass marker (group code 100)
+    for atom in source.atoms.iter().take_while(|a| a.code != 100) {
         match atom.code {
-            5 => header.handle = u32::from_str_radix(atom.value, 16).unwrap(),
+            5 => header.handle = u32::from_str_radix(atom.value, 16).unwrap_or_default(),
             67 => {
                 header.space = match atom.value {
                     "0" => Space::ModelSpace,
@@ -150,7 +153,7 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
                 };
             }
             62 => {
-                header.color_number = match atom.value.parse::<i16>().unwrap() {
+                header.color_number = match atom.get().unwrap_or_default() {
                     0 => ColorNumber::ByBlock,
                     256 => ColorNumber::ByLayer,
                     257 => ColorNumber::ByEntity,
@@ -159,27 +162,27 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
                     i => panic!("invalid color number: {}", i),
                 };
             }
-            370 => header.lineweight = atom.value.parse().ok(),
-            48 => header.line_type_scale = atom.value.parse().ok(),
+            370 => header.lineweight = atom.get(),
+            48 => header.line_type_scale = atom.get(),
             60 => header.is_visible = atom.value == "0",
             420 => {
-                header.color_rgb = atom.value.parse::<u32>().ok().map(|bits| Rgb {
+                header.color_rgb = atom.get().map(|bits: u32| Rgb {
                     r: ((bits & 0xff0000) >> 16) as u8,
                     g: ((bits & 0x00ff00) >> 8) as u8,
                     b: (bits & 0x0000ff) as u8,
                 });
             }
             430 => header.color_name = Some(atom.value.to_owned()),
-            440 => header.transparency = atom.value.parse().ok(),
+            440 => header.transparency = atom.get(),
             284 => {
-                header.shadow_mode = atom.value.parse::<i16>().ok().map(|mode| match mode {
+                header.shadow_mode = atom.get().map(|mode: i16| match mode {
                     0 => ShadowMode::CastsAndReceivesShadows,
                     1 => ShadowMode::CastsShadows,
                     2 => ShadowMode::ReceivesShadows,
                     _ => ShadowMode::IgnoresShadows,
                 })
             }
-            _ => {}
+            _ => header.extras.push((*atom).into()),
         }
     }
     header
