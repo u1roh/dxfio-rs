@@ -65,6 +65,29 @@ impl<'a> ParEntityNode<'a> {
                     p1: source.get_point(0),
                     p2: source.get_point(1),
                 }),
+                "INSERT" => Entity::Insert({
+                    let mut insert = Insert::new(source.get_or_default(2));
+                    for atom in source.atoms {
+                        match atom.code {
+                            10 => atom.get_to(&mut insert.insertion_point[0]),
+                            20 => atom.get_to(&mut insert.insertion_point[1]),
+                            30 => atom.get_to(&mut insert.insertion_point[2]),
+                            41 => atom.get_to(&mut insert.scale_factor[0]),
+                            42 => atom.get_to(&mut insert.scale_factor[1]),
+                            43 => atom.get_to(&mut insert.scale_factor[2]),
+                            50 => atom.get_to(&mut insert.rotation_degree),
+                            70 => atom.get_to(&mut insert.column_count),
+                            71 => atom.get_to(&mut insert.row_count),
+                            44 => atom.get_to(&mut insert.column_spacing),
+                            45 => atom.get_to(&mut insert.row_spacing),
+                            210 => atom.get_to(&mut insert.extrusion_direction[0]),
+                            220 => atom.get_to(&mut insert.extrusion_direction[1]),
+                            230 => atom.get_to(&mut insert.extrusion_direction[2]),
+                            _ => {}
+                        }
+                    }
+                    insert
+                }),
                 _ => Entity::Unknown(source.into()),
             },
         };

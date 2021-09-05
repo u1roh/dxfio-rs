@@ -92,6 +92,7 @@ pub struct EntityNode {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Entity {
     Line(Line),
+    Insert(Insert),
     Unknown(crate::DxfNode),
 }
 
@@ -99,6 +100,34 @@ pub enum Entity {
 pub struct Line {
     pub p1: [f64; 3],
     pub p2: [f64; 3],
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Insert {
+    pub block_name: String,
+    pub insertion_point: [f64; 3],
+    pub scale_factor: [f64; 3],
+    pub rotation_degree: f64,
+    pub column_count: usize,
+    pub row_count: usize,
+    pub column_spacing: f64,
+    pub row_spacing: f64,
+    pub extrusion_direction: [f64; 3],
+}
+impl Insert {
+    pub fn new(block_name: String) -> Self {
+        Self {
+            block_name,
+            insertion_point: [0.0, 0.0, 0.0],
+            scale_factor: [1.0, 1.0, 1.0],
+            rotation_degree: 0.0,
+            column_count: 1,
+            row_count: 1,
+            column_spacing: 0.0,
+            row_spacing: 0.0,
+            extrusion_direction: [0.0, 0.0, 1.0],
+        }
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
