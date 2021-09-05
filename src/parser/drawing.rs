@@ -3,18 +3,22 @@ use crate::*;
 
 #[derive(Debug, Clone)]
 pub struct ParDrawing<'a> {
+    pub headers: Vec<ParNode<'a>>,
     pub blocks: Vec<ParBlockNode<'a>>,
     pub entities: Vec<ParEntityNode<'a>>,
 }
 impl<'a> ParDrawing<'a> {
     pub fn parse(nodes: &'a [ParNode<'a>]) -> Self {
         let mut drawing = Self {
+            headers: Vec::new(),
             blocks: Vec::new(),
             entities: Vec::new(),
         };
         for section in nodes {
             match section.find(2) {
-                Some("HEADER") => {}
+                Some("HEADER") => {
+                    drawing.headers = section.nodes.clone();
+                }
                 Some("CLASSES") => {}
                 Some("TABLES") => {}
                 Some("BLOCKS") => {
@@ -38,6 +42,7 @@ impl<'a> ParDrawing<'a> {
 impl<'a> From<ParDrawing<'a>> for Drawing {
     fn from(drawing: ParDrawing<'a>) -> Self {
         Self {
+            headers: drawing.headers.into_iter().map(Into::into).collect(),
             blocks: drawing.blocks.into_iter().map(|b| b.target).collect(),
             entities: drawing.entities.into_iter().map(|e| e.target).collect(),
         }

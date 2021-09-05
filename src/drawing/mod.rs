@@ -1,5 +1,8 @@
+use crate::{DxfAtom, DxfNode};
+
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
+    pub headers: Vec<DxfNode>, // 暫定措置
     pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
 }
@@ -30,7 +33,7 @@ pub struct EntityHeader {
     pub color_name: Option<String>,      // 430  String
     pub transparency: Option<i32>,       // 440  i32
     pub shadow_mode: Option<ShadowMode>, // 284  i16
-    pub extras: Vec<crate::DxfAtom>,
+    pub extras: Vec<DxfAtom>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
