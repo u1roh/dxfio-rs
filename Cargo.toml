@@ -20,3 +20,6 @@ name = "main"
 
 [[example]]
 name = "to-nodes-yaml"
+
+[[example]]
+name = "to-yaml"

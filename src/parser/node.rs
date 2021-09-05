@@ -29,15 +29,6 @@ impl<'a> ParNode<'a> {
             self.get_or_default(30 + i as i16),
         ]
     }
-    pub fn print(&self, indent: usize) {
-        for _ in 0..indent {
-            print!("  ");
-        }
-        println!("{}: atoms.len() = {}", self.node_type, self.atoms.len());
-        for node in &self.nodes {
-            node.print(indent + 1);
-        }
-    }
 }
 impl<'a> From<ParNode<'a>> for crate::DxfNode {
     fn from(node: ParNode<'a>) -> Self {
