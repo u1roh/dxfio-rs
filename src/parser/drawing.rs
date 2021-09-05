@@ -144,7 +144,10 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
                 header.space = match atom.value {
                     "0" => Space::ModelSpace,
                     "1" => Space::PaperSpace,
-                    _ => panic!("unknown space: {:?}", atom),
+                    _ => {
+                        log::error!("unknown space: {:?}", atom);
+                        Space::ModelSpace // fallback
+                    }
                 };
             }
             8 => header.layer = atom.value.to_owned(),
@@ -164,7 +167,10 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
                     257 => ColorNumber::ByEntity,
                     i if i < 0 => ColorNumber::TurnedOff,
                     i if i < 256 => ColorNumber::Number(i as u8),
-                    i => panic!("invalid color number: {}", i),
+                    i => {
+                        log::error!("invalid color number: {}", i);
+                        ColorNumber::ByBlock // fallback
+                    }
                 };
             }
             370 => header.lineweight = atom.get(),

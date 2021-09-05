@@ -65,7 +65,7 @@ impl<'a> NodeParser<'a> {
     fn parse_nodes(&self, mut start: usize) -> Option<(Vec<ParNode<'a>>, usize)> {
         let mut nodes = vec![];
         while let Some((node, end)) = self.parse_node(start) {
-            if node.node_type.contains("END") {
+            if !node.node_type.starts_with('$') && node.node_type.contains("END") {
                 return Some((nodes, end));
             }
             start = end;
