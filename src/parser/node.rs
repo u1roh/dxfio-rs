@@ -79,7 +79,7 @@ impl<'a> NodeParser<'a> {
     }
     fn parse_node(&self, start: usize) -> Option<(ParNode<'a>, usize)> {
         const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
-        assert_eq!(self.atoms[start].code, 0);
+        assert!(is_node_starting_code(self.atoms[start].code));
         let node_type = self.atoms[start].value;
         if CONTAINER_TYPES.contains(&node_type) {
             self.parse_container(node_type, start + 1)
@@ -95,7 +95,7 @@ impl<'a> NodeParser<'a> {
     }
     fn parse_element(&self, node_type: &'a str, start: usize) -> Option<(ParNode<'a>, usize)> {
         (start..self.atoms.len())
-            .find(|i| self.atoms[*i].code == 0)
+            .find(|i| is_node_starting_code(self.atoms[*i].code))
             .map(|end| {
                 let entity = ParNode {
                     node_type,
@@ -105,4 +105,8 @@ impl<'a> NodeParser<'a> {
                 (entity, end)
             })
     }
+}
+
+fn is_node_starting_code(code: i16) -> bool {
+    code == 0 || code == 9
 }
