@@ -10,15 +10,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let atoms = ParAtom::parse(&s)?;
     // println!("pairs = {:?}", pairs);
     let nodes = ParNode::parse(&atoms);
-    if true {
+    if false {
         let dxfnodes: Vec<dxfio::DxfNode> = nodes.iter().map(Into::into).collect();
         // println!("{}", serde_yaml::to_string(&dxfnodes)?);
         println!("{}", serde_json::to_string_pretty(&dxfnodes)?);
+    } else {
+        //let drawing = ParDrawing::parse(&nodes);
+        let drawing = dxfio::Drawing::parse_nodes(&nodes);
+        // println!("{:?}", drawing);
+        // println!("{}", serde_yaml::to_string(&drawing)?);
+        println!("{}", serde_json::to_string_pretty(&drawing)?);
     }
-    // //let drawing = ParDrawing::parse(&nodes);
-    // let drawing = dxfio::Drawing::parse_nodes(&nodes);
-    // // println!("{:?}", drawing);
-    // let yaml = serde_yaml::to_string(&drawing)?;
-    // println!("{}", yaml);
     Ok(())
 }
