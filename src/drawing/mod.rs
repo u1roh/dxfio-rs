@@ -1,13 +1,21 @@
-use crate::{DxfAtom, DxfNode};
+use crate::{DxfAtom, DxfNode, DxfParseResult};
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
     pub headers: Vec<DxfNode>, // 暫定措置
     pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
 }
 impl Drawing {
-    pub fn parse_str(s: &str) -> crate::DxfParseResult<Self> {
+    pub fn open(path: impl AsRef<std::path::Path>) -> DxfParseResult<Self> {
+        let bytes = std::fs::read(path)?;
+        Self::parse_bytes(&bytes)
+    }
+    pub fn parse_bytes(bytes: &[u8]) -> DxfParseResult<Self> {
+        let s = crate::parser::bytes_to_string(bytes)?;
+        Self::parse_str(&s)
+    }
+    pub fn parse_str(s: &str) -> DxfParseResult<Self> {
         let atoms = crate::parser::ParAtom::parse(s)?;
         Ok(Self::parse_atoms(&atoms))
     }

@@ -20,6 +20,12 @@ pub struct DxfNode {
 pub enum DxfParseError {
     #[error(transparent)]
     ParseIntError(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    EncodingError(#[from] parser::EncodingError),
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
 }
 
 pub type DxfParseResult<T> = Result<T, DxfParseError>;
