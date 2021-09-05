@@ -1,4 +1,5 @@
 fn main() {
+    env_logger::init();
     let args: Vec<String> = std::env::args().collect();
     println!("args = {:?}", args);
     let bytes = std::fs::read(&args[1]).unwrap();
