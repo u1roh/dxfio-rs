@@ -89,8 +89,8 @@ fn draw_insert(
             let p = [cos * p[0] - sin * p[1], sin * p[0] + cos * p[1], p[2]];
             let p = [
                 insert.insertion_point[0] + p[0],
-                insert.insertion_point[0] + p[0],
-                insert.insertion_point[0] + p[0],
+                insert.insertion_point[1] + p[1],
+                insert.insertion_point[2] + p[2],
             ];
             transform(&p)
         };
