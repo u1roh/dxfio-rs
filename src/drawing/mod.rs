@@ -1,10 +1,13 @@
 mod entity;
+mod table;
 use crate::{DxfNode, DxfParseResult};
 pub use entity::*;
+pub use table::*;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
     pub headers: Vec<DxfNode>, // 暫定措置
+    pub tables: Vec<TableNode>,
     pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
 }

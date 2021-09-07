@@ -1,6 +1,12 @@
 use crate::DxfAtom;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct EntityNode {
+    pub header: EntityHeader,
+    pub entity: Entity,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EntityHeader {
     pub handle: u32,                     // 5    String
     pub space: Space,                    // 67   i16     ModelSpace
@@ -54,12 +60,6 @@ pub struct Rgb {
 pub enum Space {
     ModelSpace,
     PaperSpace,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct EntityNode {
-    pub header: EntityHeader,
-    pub entity: Entity,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
