@@ -10,24 +10,31 @@ impl<'a> ParNode<'a> {
     pub fn parse(atoms: &'a [ParAtom<'a>]) -> Vec<Self> {
         NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
-    pub fn find(&self, code: i16) -> Option<&str> {
-        self.atoms
-            .iter()
+    // pub fn find(&self, code: i16) -> Option<&str> {
+    //     self.atoms
+    //         .iter()
+    //         .find(|item| item.code == code)
+    //         .map(|item| item.value)
+    // }
+    // pub fn get<T: std::str::FromStr>(&self, code: i16) -> Option<T> {
+    //     self.find(code)?.parse().ok()
+    // }
+    // pub fn get_or_default<T: std::str::FromStr + Default>(&self, code: i16) -> T {
+    //     self.get(code).unwrap_or_default()
+    // }
+    // pub fn get_point(&self, i: usize) -> [f64; 3] {
+    //     [
+    //         self.get_or_default(10 + i as i16),
+    //         self.get_or_default(20 + i as i16),
+    //         self.get_or_default(30 + i as i16),
+    //     ]
+    // }
+}
+impl<'a> crate::DxfAtomList for &[ParAtom<'a>] {
+    fn find(&self, code: i16) -> Option<&str> {
+        self.iter()
             .find(|item| item.code == code)
             .map(|item| item.value)
-    }
-    pub fn get<T: std::str::FromStr>(&self, code: i16) -> Option<T> {
-        self.find(code)?.parse().ok()
-    }
-    pub fn get_or_default<T: std::str::FromStr + Default>(&self, code: i16) -> T {
-        self.get(code).unwrap_or_default()
-    }
-    pub fn get_point(&self, i: usize) -> [f64; 3] {
-        [
-            self.get_or_default(10 + i as i16),
-            self.get_or_default(20 + i as i16),
-            self.get_or_default(30 + i as i16),
-        ]
     }
 }
 impl<'a> From<ParNode<'a>> for crate::DxfNode {

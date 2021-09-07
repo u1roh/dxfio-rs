@@ -47,3 +47,28 @@ pub enum DxfParseError {
 }
 
 pub type DxfParseResult<T> = Result<T, DxfParseError>;
+
+pub trait DxfAtomList {
+    fn find(&self, code: i16) -> Option<&str>;
+    fn get<T: std::str::FromStr>(&self, code: i16) -> Option<T> {
+        self.find(code)?.parse().ok()
+    }
+    fn get_or_default<T: std::str::FromStr + Default>(&self, code: i16) -> T {
+        self.get(code).unwrap_or_default()
+    }
+    fn get_point(&self, i: usize) -> [f64; 3] {
+        [
+            self.get_or_default(10 + i as i16),
+            self.get_or_default(20 + i as i16),
+            self.get_or_default(30 + i as i16),
+        ]
+    }
+}
+
+impl DxfAtomList for &[DxfAtom] {
+    fn find(&self, code: i16) -> Option<&str> {
+        self.iter()
+            .find(|item| item.code == code)
+            .map(|item| &item.value as _)
+    }
+}

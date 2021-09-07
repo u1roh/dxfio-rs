@@ -15,7 +15,7 @@ impl<'a> ParDrawing<'a> {
             entities: Vec::new(),
         };
         for section in nodes {
-            match section.find(2) {
+            match section.atoms.find(2) {
                 Some("HEADER") => {
                     drawing.headers = section.nodes.clone();
                 }
@@ -62,11 +62,11 @@ impl<'a> ParEntityNode<'a> {
             header: parse_entity_header(source),
             entity: match source.node_type {
                 "LINE" => Entity::Line(Line {
-                    p1: source.get_point(0),
-                    p2: source.get_point(1),
+                    p1: source.atoms.get_point(0),
+                    p2: source.atoms.get_point(1),
                 }),
                 "INSERT" => Entity::Insert({
-                    let mut insert = Insert::new(source.get_or_default(2));
+                    let mut insert = Insert::new(source.atoms.get_or_default(2));
                     for atom in source.atoms {
                         match atom.code {
                             10 => atom.get_to(&mut insert.insertion_point[0]),
