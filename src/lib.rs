@@ -8,6 +8,14 @@ pub struct DxfAtom {
     pub code: i16,
     pub value: String,
 }
+impl DxfAtom {
+    pub fn as_ref(&self) -> parser::ParAtom {
+        parser::ParAtom {
+            code: self.code,
+            value: &self.value,
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DxfNode {
