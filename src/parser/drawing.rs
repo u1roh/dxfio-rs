@@ -22,7 +22,9 @@ impl<'a> ParDrawing<'a> {
                     drawing.headers = section.nodes.clone();
                 }
                 Some("CLASSES") => {}
-                Some("TABLES") => {}
+                Some("TABLES") => {
+                    drawing.tables = section.nodes.iter().map(ParTableNode::parse).collect();
+                }
                 Some("BLOCKS") => {
                     drawing.blocks = section.nodes.iter().map(ParBlockNode::parse).collect();
                 }
@@ -101,7 +103,55 @@ impl<'a> ParEntityNode<'a> {
 pub type ParTableNode<'a> = SourceAndTarget<'a, TableNode>;
 impl<'a> ParTableNode<'a> {
     pub fn parse(source: &'a ParNode<'a>) -> Self {
-        unimplemented!()
+        let handle = source.atoms.get_or_default(5);
+        let entries = source
+            .nodes
+            .iter()
+            .map(|node| {
+                let handle = source
+                    .atoms
+                    .get_or_default(if source.node_type == "DIMSTYLE" {
+                        105
+                    } else {
+                        5
+                    });
+                let record = match node.node_type {
+                    // "APPID" => {
+                    //     unimplemented!()
+                    // }
+                    // "BLOCK_RECORD" => {
+                    //     unimplemented!()
+                    // }
+                    // "DIMSTYLE" => {
+                    //     unimplemented!()
+                    // }
+                    // "LAYER" => {
+                    //     unimplemented!()
+                    // }
+                    // "LTYPE" => {
+                    //     unimplemented!()
+                    // }
+                    // "STYLE" => {
+                    //     unimplemented!()
+                    // }
+                    // "UCS" => {
+                    //     unimplemented!()
+                    // }
+                    // "VIEW" => {
+                    //     unimplemented!()
+                    // }
+                    // "VPORT" => {
+                    //     unimplemented!()
+                    // }
+                    _ => TableRecord::Unknown(node.into()),
+                };
+                TableEntry { handle, record }
+            })
+            .collect();
+        Self {
+            source,
+            target: TableNode { handle, entries },
+        }
     }
 }
 

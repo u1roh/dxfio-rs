@@ -1,20 +1,27 @@
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TableNode {
     pub handle: u32,
-    pub table: Table,
+    pub entries: Vec<TableEntry>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub enum Table {
-    RegApp(RegApp), // APPID
-    Block(Block),   // BLOCK_RECORD
-    DimStyle(DimStyle),
-    Layer(Layer),
-    LineType(LineType),
-    TextStyle(TextStyle),
-    Ucs(Ucs),
-    View(View),
-    Viewport(Viewport),
+pub struct TableEntry {
+    pub handle: u32,
+    pub record: TableRecord,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum TableRecord {
+    RegApp(RegApp),       // APPID
+    Block(Block),         // BLOCK_RECORD
+    DimStyle(DimStyle),   // DIMSTYLE
+    Layer(Layer),         // LAYER
+    LineType(LineType),   // LTYPE
+    TextStyle(TextStyle), // STYLE
+    Ucs(Ucs),             // UCS
+    View(View),           // VIEW
+    Viewport(Viewport),   // VPORT
+    Unknown(crate::DxfNode),
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
