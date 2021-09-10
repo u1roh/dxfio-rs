@@ -160,7 +160,7 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
         layer: String::default(),           // 8    String
         line_type: LineType::ByLayer,       // 6    String  ByLayer
         color_number: ColorNumber::ByLayer, // 62   i16     ByLayer
-        lineweight: None,                   // 370  i16
+        line_weight: None,                  // 370  i16
         line_type_scale: None,              // 48   f64
         is_visible: true,                   // 60   i16     true
         color_rgb: None,                    // 420  i32
@@ -206,7 +206,7 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
                     }
                 };
             }
-            370 => header.lineweight = atom.get(),
+            370 => header.line_weight = atom.get(),
             48 => header.line_type_scale = atom.get(),
             60 => header.is_visible = atom.value == "0",
             420 => {

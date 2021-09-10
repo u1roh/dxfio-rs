@@ -13,7 +13,7 @@ pub struct EntityHeader {
     pub layer: String,                   // 8    String
     pub line_type: LineType,             // 6    String  ByLayer
     pub color_number: ColorNumber,       // 62   i16     ByLayer
-    pub lineweight: Option<i16>,         // 370  i16
+    pub line_weight: Option<i16>,        // 370  i16
     pub line_type_scale: Option<f64>,    // 48   f64
     pub is_visible: bool,                // 60   i16     true
     pub color_rgb: Option<Rgb>,          // 420  i32

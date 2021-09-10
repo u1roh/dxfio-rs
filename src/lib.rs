@@ -23,7 +23,6 @@ pub struct DxfNode {
     pub atoms: Vec<DxfAtom>,
     pub nodes: Vec<Self>,
 }
-
 impl DxfNode {
     pub fn open(path: impl AsRef<std::path::Path>) -> DxfParseResult<Vec<Self>> {
         let bytes = std::fs::read(path)?;
