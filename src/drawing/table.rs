@@ -38,7 +38,10 @@ pub struct DimStyle {}
 pub struct Layer {}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct LineType {}
+pub struct LineType {
+    pub description: String,
+    pub pattern_lengths: Vec<f64>,
+}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TextStyle {}

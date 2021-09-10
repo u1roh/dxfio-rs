@@ -129,9 +129,20 @@ impl<'a> ParTableNode<'a> {
                     // "LAYER" => {
                     //     unimplemented!()
                     // }
-                    // "LTYPE" => {
-                    //     unimplemented!()
-                    // }
+                    "LTYPE" => {
+                        let mut dst = LineType {
+                            description: String::default(),
+                            pattern_lengths: vec![],
+                        };
+                        for atom in node.atoms {
+                            match atom.code {
+                                3 => dst.description = atom.value.to_owned(),
+                                49 => dst.pattern_lengths.push(atom.get().unwrap_or_default()),
+                                _ => {}
+                            }
+                        }
+                        TableRecord::LineType(dst)
+                    }
                     // "STYLE" => {
                     //     unimplemented!()
                     // }
@@ -213,7 +224,7 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
         handle: 0,                          // 5    String
         space: Space::ModelSpace,           // 67   i16     ModelSpace
         layer: String::default(),           // 8    String
-        line_type: LineType::ByLayer,       // 6    String  ByLayer
+        line_type: LineTypeName::ByLayer,   // 6    String  ByLayer
         color_number: ColorNumber::ByLayer, // 62   i16     ByLayer
         line_weight: None,                  // 370  i16
         line_type_scale: None,              // 48   f64
@@ -241,11 +252,11 @@ fn parse_entity_header(source: &ParNode) -> EntityHeader {
             8 => header.layer = atom.value.to_owned(),
             6 => {
                 header.line_type = match atom.value {
-                    "BYLAYER" => LineType::ByLayer,
-                    "BYBLOCK" => LineType::ByBlock,
-                    "CONTINUOUS" => LineType::Continuous,
-                    "DASHED" => LineType::Dashed,
-                    _ => LineType::Other(atom.value.to_owned()),
+                    "BYLAYER" => LineTypeName::ByLayer,
+                    "BYBLOCK" => LineTypeName::ByBlock,
+                    "CONTINUOUS" => LineTypeName::Continuous,
+                    "DASHED" => LineTypeName::Dashed,
+                    _ => LineTypeName::Other(atom.value.to_owned()),
                 };
             }
             62 => {

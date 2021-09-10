@@ -11,7 +11,7 @@ pub struct EntityHeader {
     pub handle: u32,                     // 5    String
     pub space: Space,                    // 67   i16     ModelSpace
     pub layer: String,                   // 8    String
-    pub line_type: LineType,             // 6    String  ByLayer
+    pub line_type: LineTypeName,         // 6    String  ByLayer
     pub color_number: ColorNumber,       // 62   i16     ByLayer
     pub line_weight: Option<i16>,        // 370  i16
     pub line_type_scale: Option<f64>,    // 48   f64
@@ -24,7 +24,7 @@ pub struct EntityHeader {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum LineType {
+pub enum LineTypeName {
     ByLayer,
     ByBlock,
     Continuous,
