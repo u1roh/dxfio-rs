@@ -108,13 +108,14 @@ impl<'a> ParTableNode<'a> {
             .nodes
             .iter()
             .map(|node| {
-                let handle = source
+                let handle = node
                     .atoms
                     .get_or_default(if source.node_type == "DIMSTYLE" {
                         105
                     } else {
                         5
                     });
+                let name = node.atoms.get_or_default(2);
                 let record = match node.node_type {
                     // "APPID" => {
                     //     unimplemented!()
@@ -145,7 +146,11 @@ impl<'a> ParTableNode<'a> {
                     // }
                     _ => TableRecord::Unknown(node.into()),
                 };
-                TableEntry { handle, record }
+                TableEntry {
+                    handle,
+                    name,
+                    record,
+                }
             })
             .collect();
         Self {

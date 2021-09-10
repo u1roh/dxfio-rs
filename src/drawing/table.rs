@@ -7,6 +7,7 @@ pub struct TableNode {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TableEntry {
     pub handle: u32,
+    pub name: String,
     pub record: TableRecord,
 }
 
