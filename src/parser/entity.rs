@@ -1,4 +1,4 @@
-use super::{FromNode, ParNode};
+use super::{FromNode, ParNode, SetAtom};
 use crate::*;
 
 impl FromNode for EntityNode {
@@ -129,81 +129,63 @@ impl FromNode for Dimension {
     }
 }
 
-impl FromNode for EntityHeader {
-    fn from_node(source: &ParNode) -> Self {
-        let mut header = EntityHeader {
-            handle: 0,                          // 5    String
-            space: Space::ModelSpace,           // 67   i16     ModelSpace
-            layer: String::default(),           // 8    String
-            line_type: LineTypeRef::ByLayer,    // 6    String  ByLayer
-            color_number: ColorNumber::ByLayer, // 62   i16     ByLayer
-            line_weight: None,                  // 370  i16
-            line_type_scale: None,              // 48   f64
-            is_visible: true,                   // 60   i16     true
-            color_rgb: None,                    // 420  i32
-            color_name: None,                   // 430  String
-            transparency: None,                 // 440  i32
-            shadow_mode: None,                  // 284  i16
-            extras: vec![],
-        };
-        // read atoms until subclass marker (group code 100)
-        for atom in source.atoms.iter().take_while(|a| a.code != 100) {
-            match atom.code {
-                5 => header.handle = u32::from_str_radix(atom.value, 16).unwrap_or_default(),
-                67 => {
-                    header.space = match atom.value {
-                        "0" => Space::ModelSpace,
-                        "1" => Space::PaperSpace,
-                        _ => {
-                            log::error!("unknown space: {:?}", atom);
-                            Space::ModelSpace // fallback
-                        }
-                    };
-                }
-                8 => header.layer = atom.value.to_owned(),
-                6 => {
-                    header.line_type = match atom.value {
-                        "BYLAYER" => LineTypeRef::ByLayer,
-                        "BYBLOCK" => LineTypeRef::ByBlock,
-                        _ => LineTypeRef::ByName(atom.value.to_owned()),
-                    };
-                }
-                62 => {
-                    header.color_number = match atom.get().unwrap_or_default() {
-                        0 => ColorNumber::ByBlock,
-                        256 => ColorNumber::ByLayer,
-                        257 => ColorNumber::ByEntity,
-                        i if i < 0 => ColorNumber::TurnedOff,
-                        i if i < 256 => ColorNumber::Number(i as u8),
-                        i => {
-                            log::error!("invalid color number: {}", i);
-                            ColorNumber::ByBlock // fallback
-                        }
-                    };
-                }
-                370 => header.line_weight = atom.get(),
-                48 => header.line_type_scale = atom.get(),
-                60 => header.is_visible = atom.value == "0",
-                420 => {
-                    header.color_rgb = atom.get().map(|bits: u32| Rgb {
-                        r: ((bits & 0xff0000) >> 16) as u8,
-                        g: ((bits & 0x00ff00) >> 8) as u8,
-                        b: (bits & 0x0000ff) as u8,
-                    });
-                }
-                430 => header.color_name = Some(atom.value.to_owned()),
-                440 => header.transparency = atom.get(),
-                284 => {
-                    header.shadow_mode = atom.get().map(|mode: i16| match mode {
-                        0 => ShadowMode::CastsAndReceivesShadows,
-                        1 => ShadowMode::CastsShadows,
-                        2 => ShadowMode::ReceivesShadows,
-                        _ => ShadowMode::IgnoresShadows,
-                    })
-                }
-                _ => header.extras.push((*atom).into()),
+impl SetAtom for EntityHeader {
+    fn set_atom(&mut self, atom: &super::ParAtom) -> bool {
+        match atom.code {
+            5 => self.handle = u32::from_str_radix(atom.value, 16).unwrap_or_default(),
+            67 => {
+                self.space = match atom.value {
+                    "0" => Space::ModelSpace,
+                    "1" => Space::PaperSpace,
+                    _ => {
+                        log::error!("unknown space: {:?}", atom);
+                        Space::ModelSpace // fallback
+                    }
+                };
             }
+            8 => self.layer = atom.value.to_owned(),
+            6 => {
+                self.line_type = match atom.value {
+                    "BYLAYER" => LineTypeRef::ByLayer,
+                    "BYBLOCK" => LineTypeRef::ByBlock,
+                    _ => LineTypeRef::ByName(atom.value.to_owned()),
+                };
+            }
+            62 => {
+                self.color_number = match atom.get().unwrap_or_default() {
+                    0 => ColorNumber::ByBlock,
+                    256 => ColorNumber::ByLayer,
+                    257 => ColorNumber::ByEntity,
+                    i if i < 0 => ColorNumber::TurnedOff,
+                    i if i < 256 => ColorNumber::Number(i as u8),
+                    i => {
+                        log::error!("invalid color number: {}", i);
+                        ColorNumber::ByBlock // fallback
+                    }
+                };
+            }
+            370 => self.line_weight = atom.get(),
+            48 => self.line_type_scale = atom.get(),
+            60 => self.is_visible = atom.value == "0",
+            420 => {
+                self.color_rgb = atom.get().map(|bits: u32| Rgb {
+                    r: ((bits & 0xff0000) >> 16) as u8,
+                    g: ((bits & 0x00ff00) >> 8) as u8,
+                    b: (bits & 0x0000ff) as u8,
+                });
+            }
+            430 => self.color_name = Some(atom.value.to_owned()),
+            440 => self.transparency = atom.get(),
+            284 => {
+                self.shadow_mode = atom.get().map(|mode: i16| match mode {
+                    0 => ShadowMode::CastsAndReceivesShadows,
+                    1 => ShadowMode::CastsShadows,
+                    2 => ShadowMode::ReceivesShadows,
+                    _ => ShadowMode::IgnoresShadows,
+                })
+            }
+            _ => return false,
         }
-        header
+        true
     }
 }

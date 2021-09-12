@@ -36,7 +36,21 @@ pub fn bytes_to_string(bytes: &[u8]) -> Result<Cow<str>, EncodingError> {
 }
 
 pub trait FromNode {
-    fn from_node(nodes: &ParNode) -> Self;
+    fn from_node(source: &ParNode) -> Self;
+}
+
+pub trait SetAtom: Default {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool;
+}
+
+impl<T: SetAtom> FromNode for T {
+    fn from_node(source: &ParNode) -> Self {
+        let mut dst = Self::default();
+        for atom in source.atoms {
+            dst.set_atom(atom);
+        }
+        dst
+    }
 }
 
 #[derive(Debug, Clone)]

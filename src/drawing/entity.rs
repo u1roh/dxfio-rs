@@ -6,7 +6,7 @@ pub struct EntityNode {
     pub entity: Entity,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct EntityHeader {
     pub handle: u32,                     // 5    String
     pub space: Space,                    // 67   i16     ModelSpace
@@ -29,6 +29,11 @@ pub enum LineTypeRef {
     ByBlock,
     ByName(String),
 }
+impl Default for LineTypeRef {
+    fn default() -> Self {
+        Self::ByLayer
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum ShadowMode {
@@ -46,6 +51,11 @@ pub enum ColorNumber {
     TurnedOff,
     Number(u8),
 }
+impl Default for ColorNumber {
+    fn default() -> Self {
+        Self::ByLayer
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Rgb {
@@ -58,6 +68,11 @@ pub struct Rgb {
 pub enum Space {
     ModelSpace,
     PaperSpace,
+}
+impl Default for Space {
+    fn default() -> Self {
+        Self::ModelSpace
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
