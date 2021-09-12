@@ -34,13 +34,28 @@ pub struct Block {}
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DimStyle {}
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Layer {}
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct Layer {
+    pub is_plotted: bool,
+    pub flags: u16,
+    pub color_number: Option<u8>, // None means turned-off
+    pub line_type: Option<String>,
+    pub line_weight: Option<u16>,
+    pub plot_style_handle: Option<u32>,
+    pub material_handle: Option<u32>,
+}
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct LineType {
+    pub flags: u16,
     pub description: String,
+    pub total_pattern_length: f64,
     pub pattern_lengths: Vec<f64>,
+}
+impl LineType {
+    pub fn is_continuous(&self) -> bool {
+        self.pattern_lengths.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

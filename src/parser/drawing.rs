@@ -126,18 +126,41 @@ impl<'a> ParTableNode<'a> {
                     // "DIMSTYLE" => {
                     //     unimplemented!()
                     // }
-                    // "LAYER" => {
-                    //     unimplemented!()
-                    // }
-                    "LTYPE" => {
-                        let mut dst = LineType {
-                            description: String::default(),
-                            pattern_lengths: vec![],
+                    "LAYER" => {
+                        let mut dst = Layer {
+                            is_plotted: true,
+                            ..Layer::default()
                         };
                         for atom in node.atoms {
                             match atom.code {
+                                70 => atom.get_to(&mut dst.flags),
+                                62 => {
+                                    // if negative, layer is off
+                                    dst.color_number =
+                                        atom.get::<i16>().filter(|&c| c >= 0).map(|c| c as u8)
+                                }
+                                6 => dst.line_type = atom.get(),
+                                290 => dst.is_plotted = atom.get::<i16>().unwrap_or_default() != 0,
+                                370 => dst.line_weight = atom.get(),
+                                390 => dst.plot_style_handle = atom.get(),
+                                347 => dst.material_handle = atom.get(),
+                                _ => {}
+                            }
+                        }
+                        TableRecord::Layer(dst)
+                    }
+                    "LTYPE" => {
+                        let mut dst = LineType::default();
+                        for atom in node.atoms {
+                            match atom.code {
+                                70 => atom.get_to(&mut dst.flags),
                                 3 => dst.description = atom.value.to_owned(),
-                                49 => dst.pattern_lengths.push(atom.get().unwrap_or_default()),
+                                40 => atom.get_to(&mut dst.total_pattern_length),
+                                49 => {
+                                    if let Some(len) = atom.get() {
+                                        dst.pattern_lengths.push(len);
+                                    }
+                                }
                                 _ => {}
                             }
                         }
