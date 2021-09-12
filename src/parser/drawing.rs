@@ -123,9 +123,29 @@ impl<'a> ParTableNode<'a> {
                     // "BLOCK_RECORD" => {
                     //     unimplemented!()
                     // }
-                    // "DIMSTYLE" => {
-                    //     unimplemented!()
-                    // }
+                    "DIMSTYLE" => {
+                        let mut dst = DimStyle::default();
+                        for atom in node.atoms {
+                            match atom.code {
+                                3 => atom.get_to(&mut dst.general_dimensioning_suffix),
+                                4 => atom.get_to(&mut dst.alternate_dimensioning_suffix),
+                                5 => atom.get_to(&mut dst.arrow_block_name),
+                                6 => atom.get_to(&mut dst.arrow_block_name_1st),
+                                7 => atom.get_to(&mut dst.arrow_block_name_2nd),
+                                40 => atom.get_to(&mut dst.scale_factor),
+                                41 => atom.get_to(&mut dst.arrow_size),
+                                42 => atom.get_to(&mut dst.extension_line_offset),
+                                43 => atom.get_to(&mut dst.dimension_line_increment),
+                                44 => atom.get_to(&mut dst.extension_line_extension),
+                                45 => atom.get_to(&mut dst.rounding_value),
+                                46 => atom.get_to(&mut dst.dimension_line_extension),
+                                47 => atom.get_to(&mut dst.plus_tolerance),
+                                48 => atom.get_to(&mut dst.minus_tolerance),
+                                _ => {}
+                            }
+                        }
+                        TableRecord::DimStyle(dst)
+                    }
                     "LAYER" => {
                         let mut dst = Layer {
                             is_plotted: true,
