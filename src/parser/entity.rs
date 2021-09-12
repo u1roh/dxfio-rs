@@ -1,4 +1,4 @@
-use super::{FromNode, ParNode, SetAtom};
+use super::{FromNode, ParAtom, ParNode, SetAtom};
 use crate::*;
 
 impl FromNode for EntityNode {
@@ -21,111 +21,110 @@ impl FromNode for Entity {
     }
 }
 
-impl FromNode for Line {
-    fn from_node(source: &ParNode) -> Self {
-        assert_eq!(source.node_type, "LINE");
-        Self {
-            p1: source.atoms.get_point(0),
-            p2: source.atoms.get_point(1),
+impl SetAtom for Line {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool {
+        match atom.code {
+            10 => atom.get_to(&mut self.p1[0]),
+            20 => atom.get_to(&mut self.p1[1]),
+            30 => atom.get_to(&mut self.p1[2]),
+            11 => atom.get_to(&mut self.p2[0]),
+            21 => atom.get_to(&mut self.p2[1]),
+            31 => atom.get_to(&mut self.p2[2]),
+            _ => return false,
         }
+        true
     }
 }
 
-impl FromNode for Insert {
-    fn from_node(source: &ParNode) -> Self {
-        assert_eq!(source.node_type, "INSERT");
-        let mut insert = Self::new(source.atoms.get_or_default(2));
-        for atom in source.atoms {
-            match atom.code {
-                10 => atom.get_to(&mut insert.insertion_point[0]),
-                20 => atom.get_to(&mut insert.insertion_point[1]),
-                30 => atom.get_to(&mut insert.insertion_point[2]),
-                41 => atom.get_to(&mut insert.scale_factor[0]),
-                42 => atom.get_to(&mut insert.scale_factor[1]),
-                43 => atom.get_to(&mut insert.scale_factor[2]),
-                50 => atom.get_to(&mut insert.rotation_degree),
-                70 => atom.get_to(&mut insert.column_count),
-                71 => atom.get_to(&mut insert.row_count),
-                44 => atom.get_to(&mut insert.column_spacing),
-                45 => atom.get_to(&mut insert.row_spacing),
-                210 => atom.get_to(&mut insert.extrusion_direction[0]),
-                220 => atom.get_to(&mut insert.extrusion_direction[1]),
-                230 => atom.get_to(&mut insert.extrusion_direction[2]),
-                _ => {}
-            }
+impl SetAtom for Insert {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool {
+        match atom.code {
+            2 => atom.get_to(&mut self.block_name),
+            10 => atom.get_to(&mut self.insertion_point[0]),
+            20 => atom.get_to(&mut self.insertion_point[1]),
+            30 => atom.get_to(&mut self.insertion_point[2]),
+            41 => atom.get_to(&mut self.scale_factor[0]),
+            42 => atom.get_to(&mut self.scale_factor[1]),
+            43 => atom.get_to(&mut self.scale_factor[2]),
+            50 => atom.get_to(&mut self.rotation_degree),
+            70 => atom.get_to(&mut self.column_count),
+            71 => atom.get_to(&mut self.row_count),
+            44 => atom.get_to(&mut self.column_spacing),
+            45 => atom.get_to(&mut self.row_spacing),
+            210 => atom.get_to(&mut self.extrusion_direction[0]),
+            220 => atom.get_to(&mut self.extrusion_direction[1]),
+            230 => atom.get_to(&mut self.extrusion_direction[2]),
+            _ => return false,
         }
-        insert
+        true
     }
 }
 
-impl FromNode for Dimension {
-    fn from_node(source: &ParNode) -> Self {
-        assert_eq!(source.node_type, "DIMENSION");
-        let mut dst = Self::default();
-        for atom in source.atoms {
-            match atom.code {
-                280 => atom.get_to(&mut dst.version),
-                2 => atom.get_to(&mut dst.block_name),
+impl SetAtom for Dimension {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool {
+        match atom.code {
+            280 => atom.get_to(&mut self.version),
+            2 => atom.get_to(&mut self.block_name),
 
-                10 => atom.get_to(&mut dst.definition_point[0]),
-                20 => atom.get_to(&mut dst.definition_point[1]),
-                30 => atom.get_to(&mut dst.definition_point[2]),
+            10 => atom.get_to(&mut self.definition_point[0]),
+            20 => atom.get_to(&mut self.definition_point[1]),
+            30 => atom.get_to(&mut self.definition_point[2]),
 
-                11 => atom.get_to(&mut dst.text_mid_point[0]),
-                21 => atom.get_to(&mut dst.text_mid_point[1]),
-                31 => atom.get_to(&mut dst.text_mid_point[2]),
+            11 => atom.get_to(&mut self.text_mid_point[0]),
+            21 => atom.get_to(&mut self.text_mid_point[1]),
+            31 => atom.get_to(&mut self.text_mid_point[2]),
 
-                70 => {
-                    if let Some(flags) = atom.get::<i16>() {
-                        dst.dimension_type = match flags & 0b1111 {
-                            0 => DimensionType::RotatedOrHorizontalOrVertical,
-                            1 => DimensionType::Aligned,
-                            2 => DimensionType::Angular,
-                            3 => DimensionType::Diameter,
-                            4 => DimensionType::Radius,
-                            5 => DimensionType::Angular3Point,
-                            _ => DimensionType::Ordinate(if flags & 0b1000000 != 0 {
-                                OrdinateType::X
-                            } else {
-                                OrdinateType::Y
-                            }),
-                        };
-                        dst.dimension_flags
-                            .block_is_referenced_by_this_dimension_only = flags & 0b100000 != 0;
-                        dst.dimension_flags
-                            .dimension_text_is_positioned_at_user_defined_location =
-                            flags & 0b10000000 != 0;
-                    }
-                }
-                71 => {
-                    dst.attachment_point = match atom.get::<i16>().unwrap_or_default() {
-                        0 => AttachmentPoint::TopLeft,
-                        1 => AttachmentPoint::TopCenter,
-                        2 => AttachmentPoint::TopRight,
-                        3 => AttachmentPoint::MiddleLeft,
-                        4 => AttachmentPoint::MiddleCenter,
-                        5 => AttachmentPoint::MiddleRight,
-                        6 => AttachmentPoint::BottomLeft,
-                        7 => AttachmentPoint::BottomCenter,
-                        _ => AttachmentPoint::BottomRight,
-                    }
-                }
-                72 => {
-                    if atom.get::<i16>() == Some(2) {
-                        dst.text_line_spacing_style = TextLineSpacingStyle::Exact;
-                    }
-                }
-                41 => dst.text_line_spacing_factor = atom.get(),
-                42 => dst.actual_measurement = atom.get(),
-                1 => dst.text = atom.get(),
-                53 => dst.text_rotation_angle = atom.get(),
-                54 => dst.horizontal_direction_angle = atom.get(),
-                _ => {
-                    log::warn!("unhandled atom: {:?}", atom);
+            70 => {
+                if let Some(flags) = atom.get::<i16>() {
+                    self.dimension_type = match flags & 0b1111 {
+                        0 => DimensionType::RotatedOrHorizontalOrVertical,
+                        1 => DimensionType::Aligned,
+                        2 => DimensionType::Angular,
+                        3 => DimensionType::Diameter,
+                        4 => DimensionType::Radius,
+                        5 => DimensionType::Angular3Point,
+                        _ => DimensionType::Ordinate(if flags & 0b1000000 != 0 {
+                            OrdinateType::X
+                        } else {
+                            OrdinateType::Y
+                        }),
+                    };
+                    self.dimension_flags
+                        .block_is_referenced_by_this_dimension_only = flags & 0b100000 != 0;
+                    self.dimension_flags
+                        .dimension_text_is_positioned_at_user_defined_location =
+                        flags & 0b10000000 != 0;
                 }
             }
+            71 => {
+                self.attachment_point = match atom.get::<i16>().unwrap_or_default() {
+                    0 => AttachmentPoint::TopLeft,
+                    1 => AttachmentPoint::TopCenter,
+                    2 => AttachmentPoint::TopRight,
+                    3 => AttachmentPoint::MiddleLeft,
+                    4 => AttachmentPoint::MiddleCenter,
+                    5 => AttachmentPoint::MiddleRight,
+                    6 => AttachmentPoint::BottomLeft,
+                    7 => AttachmentPoint::BottomCenter,
+                    _ => AttachmentPoint::BottomRight,
+                }
+            }
+            72 => {
+                if atom.get::<i16>() == Some(2) {
+                    self.text_line_spacing_style = TextLineSpacingStyle::Exact;
+                }
+            }
+            41 => self.text_line_spacing_factor = atom.get(),
+            42 => self.actual_measurement = atom.get(),
+            1 => self.text = atom.get(),
+            53 => self.text_rotation_angle = atom.get(),
+            54 => self.horizontal_direction_angle = atom.get(),
+            _ => {
+                log::warn!("unhandled atom: {:?}", atom);
+                return false;
+            }
         }
-        dst
+        true
     }
 }
 

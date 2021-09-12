@@ -83,7 +83,7 @@ pub enum Entity {
     NotSupported(crate::DxfNode),
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct Line {
     pub p1: [f64; 3],
     pub p2: [f64; 3],
@@ -101,10 +101,10 @@ pub struct Insert {
     pub row_spacing: f64,
     pub extrusion_direction: [f64; 3],
 }
-impl Insert {
-    pub fn new(block_name: String) -> Self {
+impl Default for Insert {
+    fn default() -> Self {
         Self {
-            block_name,
+            block_name: String::default(),
             insertion_point: [0.0, 0.0, 0.0],
             scale_factor: [1.0, 1.0, 1.0],
             rotation_degree: 0.0,
