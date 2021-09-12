@@ -13,8 +13,9 @@ impl FromNode for EntityNode {
 impl FromNode for Entity {
     fn from_node(source: &ParNode) -> Self {
         match source.node_type {
-            "LINE" => Self::Line(FromNode::from_node(source)),
             "INSERT" => Self::Insert(FromNode::from_node(source)),
+            "LINE" => Self::Line(FromNode::from_node(source)),
+            "DIMENSION" => Self::Dimension(Box::new(FromNode::from_node(source))),
             _ => Entity::NotSupported(source.into()),
         }
     }
@@ -57,13 +58,84 @@ impl FromNode for Insert {
     }
 }
 
+impl FromNode for Dimension {
+    fn from_node(source: &ParNode) -> Self {
+        assert_eq!(source.node_type, "DIMENSION");
+        let mut dst = Self::default();
+        for atom in source.atoms {
+            match atom.code {
+                280 => atom.get_to(&mut dst.version),
+                2 => atom.get_to(&mut dst.block_name),
+
+                10 => atom.get_to(&mut dst.definition_point[0]),
+                20 => atom.get_to(&mut dst.definition_point[1]),
+                30 => atom.get_to(&mut dst.definition_point[2]),
+
+                11 => atom.get_to(&mut dst.text_mid_point[0]),
+                21 => atom.get_to(&mut dst.text_mid_point[1]),
+                31 => atom.get_to(&mut dst.text_mid_point[2]),
+
+                70 => {
+                    if let Some(flags) = atom.get::<i16>() {
+                        dst.dimension_type = match flags & 0b1111 {
+                            0 => DimensionType::RotatedOrHorizontalOrVertical,
+                            1 => DimensionType::Aligned,
+                            2 => DimensionType::Angular,
+                            3 => DimensionType::Diameter,
+                            4 => DimensionType::Radius,
+                            5 => DimensionType::Angular3Point,
+                            _ => DimensionType::Ordinate(if flags & 0b1000000 != 0 {
+                                OrdinateType::X
+                            } else {
+                                OrdinateType::Y
+                            }),
+                        };
+                        dst.dimension_flags
+                            .block_is_referenced_by_this_dimension_only = flags & 0b100000 != 0;
+                        dst.dimension_flags
+                            .dimension_text_is_positioned_at_user_defined_location =
+                            flags & 0b10000000 != 0;
+                    }
+                }
+                71 => {
+                    dst.attachment_point = match atom.get::<i16>().unwrap_or_default() {
+                        0 => AttachmentPoint::TopLeft,
+                        1 => AttachmentPoint::TopCenter,
+                        2 => AttachmentPoint::TopRight,
+                        3 => AttachmentPoint::MiddleLeft,
+                        4 => AttachmentPoint::MiddleCenter,
+                        5 => AttachmentPoint::MiddleRight,
+                        6 => AttachmentPoint::BottomLeft,
+                        7 => AttachmentPoint::BottomCenter,
+                        _ => AttachmentPoint::BottomRight,
+                    }
+                }
+                72 => {
+                    if atom.get::<i16>() == Some(2) {
+                        dst.text_line_spacing_style = TextLineSpacingStyle::Exact;
+                    }
+                }
+                41 => dst.text_line_spacing_factor = atom.get(),
+                42 => dst.actual_measurement = atom.get(),
+                1 => dst.text = atom.get(),
+                53 => dst.text_rotation_angle = atom.get(),
+                54 => dst.horizontal_direction_angle = atom.get(),
+                _ => {
+                    log::warn!("unhandled atom: {:?}", atom);
+                }
+            }
+        }
+        dst
+    }
+}
+
 impl FromNode for EntityHeader {
     fn from_node(source: &ParNode) -> Self {
         let mut header = EntityHeader {
             handle: 0,                          // 5    String
             space: Space::ModelSpace,           // 67   i16     ModelSpace
             layer: String::default(),           // 8    String
-            line_type: LineTypeName::ByLayer,   // 6    String  ByLayer
+            line_type: LineTypeRef::ByLayer,    // 6    String  ByLayer
             color_number: ColorNumber::ByLayer, // 62   i16     ByLayer
             line_weight: None,                  // 370  i16
             line_type_scale: None,              // 48   f64
@@ -91,11 +163,9 @@ impl FromNode for EntityHeader {
                 8 => header.layer = atom.value.to_owned(),
                 6 => {
                     header.line_type = match atom.value {
-                        "BYLAYER" => LineTypeName::ByLayer,
-                        "BYBLOCK" => LineTypeName::ByBlock,
-                        "CONTINUOUS" => LineTypeName::Continuous,
-                        "DASHED" => LineTypeName::Dashed,
-                        _ => LineTypeName::Other(atom.value.to_owned()),
+                        "BYLAYER" => LineTypeRef::ByLayer,
+                        "BYBLOCK" => LineTypeRef::ByBlock,
+                        _ => LineTypeRef::ByName(atom.value.to_owned()),
                     };
                 }
                 62 => {

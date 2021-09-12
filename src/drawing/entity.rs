@@ -11,7 +11,7 @@ pub struct EntityHeader {
     pub handle: u32,                     // 5    String
     pub space: Space,                    // 67   i16     ModelSpace
     pub layer: String,                   // 8    String
-    pub line_type: LineTypeName,         // 6    String  ByLayer
+    pub line_type: LineTypeRef,          // 6    String  ByLayer
     pub color_number: ColorNumber,       // 62   i16     ByLayer
     pub line_weight: Option<i16>,        // 370  i16
     pub line_type_scale: Option<f64>,    // 48   f64
@@ -24,12 +24,10 @@ pub struct EntityHeader {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum LineTypeName {
+pub enum LineTypeRef {
     ByLayer,
     ByBlock,
-    Continuous,
-    Dashed,
-    Other(String),
+    ByName(String),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -64,8 +62,9 @@ pub enum Space {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Entity {
-    Line(Line),
     Insert(Insert),
+    Line(Line),
+    Dimension(Box<Dimension>),
     NotSupported(crate::DxfNode),
 }
 
@@ -100,5 +99,88 @@ impl Insert {
             row_spacing: 0.0,
             extrusion_direction: [0.0, 0.0, 1.0],
         }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Dimension {
+    pub version: i16,                                  // 280
+    pub block_name: String,                            // 2
+    pub definition_point: [f64; 3],                    // 10, 20, 30 (WCS)
+    pub text_mid_point: [f64; 3],                      // 11, 21, 31 (OCS)
+    pub dimension_type: DimensionType,                 // 70
+    pub dimension_flags: DimensionFlags,               // 70
+    pub attachment_point: AttachmentPoint,             // 71
+    pub text_line_spacing_style: TextLineSpacingStyle, // 72
+    pub text_line_spacing_factor: Option<f64>,         // 41
+    pub actual_measurement: Option<f64>,               // 42
+    pub text: Option<String>,                          // 1
+    pub text_rotation_angle: Option<f64>,              // 53
+    pub horizontal_direction_angle: Option<f64>,       // 51
+    pub extrusion_direction: Option<[f64; 3]>,         // 210, 220, 230
+    pub definition_point2: Option<[f64; 3]>,           // 13, 23, 33 (WCS)
+    pub definition_point3: Option<[f64; 3]>,           // 14, 24, 34 (WCS)
+    pub definition_point4: Option<[f64; 3]>,           // 15, 25, 35 (WCS)
+    pub insertion_point: Option<[f64; 3]>,             // 12, 22, 32 (OCS)
+    pub arc_location: Option<[f64; 3]>,                // 16, 26, 36 (OCS)
+    pub rotation_angle: Option<f64>,                   // 50
+    pub oblique_angle: Option<f64>,                    // 52
+    pub leader_length: Option<f64>,                    // 40
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum DimensionType {
+    RotatedOrHorizontalOrVertical,
+    Aligned,
+    Angular,
+    Diameter,
+    Radius,
+    Angular3Point,
+    Ordinate(OrdinateType),
+}
+impl Default for DimensionType {
+    fn default() -> Self {
+        Self::RotatedOrHorizontalOrVertical
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum OrdinateType {
+    X,
+    Y,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct DimensionFlags {
+    pub block_is_referenced_by_this_dimension_only: bool,
+    pub dimension_text_is_positioned_at_user_defined_location: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum AttachmentPoint {
+    TopLeft,
+    TopCenter,
+    TopRight,
+    MiddleLeft,
+    MiddleCenter,
+    MiddleRight,
+    BottomLeft,
+    BottomCenter,
+    BottomRight,
+}
+impl Default for AttachmentPoint {
+    fn default() -> Self {
+        Self::TopLeft
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TextLineSpacingStyle {
+    AtLeast,
+    Exact,
+}
+impl Default for TextLineSpacingStyle {
+    fn default() -> Self {
+        Self::AtLeast
     }
 }
