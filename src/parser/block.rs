@@ -1,8 +1,8 @@
-use super::{BlockNode, ParBlockNode, ParEntityNode, ParNode};
+use super::ParNode;
 use crate::*;
 
-impl<'a> ParBlockNode<'a> {
-    pub(super) fn parse(source: &'a ParNode<'a>) -> Self {
+impl super::ParseFromNode for BlockNode {
+    fn parse_from_node(source: &ParNode) -> Self {
         let mut target = BlockNode {
             handle: 0,
             layer: String::default(),
@@ -41,9 +41,9 @@ impl<'a> ParBlockNode<'a> {
         target.entities = source
             .nodes
             .iter()
-            .map(ParEntityNode::parse)
+            .map(super::SourceAndTarget::parse_from_node)
             .map(|e| e.target)
             .collect();
-        Self { source, target }
+        target
     }
 }

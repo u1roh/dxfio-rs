@@ -13,15 +13,15 @@ pub struct TableEntry {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum TableRecord {
-    RegApp(RegApp),       // APPID
-    Block(Block),         // BLOCK_RECORD
-    DimStyle(DimStyle),   // DIMSTYLE
-    Layer(Layer),         // LAYER
-    LineType(LineType),   // LTYPE
-    TextStyle(TextStyle), // STYLE
-    Ucs(Ucs),             // UCS
-    View(View),           // VIEW
-    Viewport(Viewport),   // VPORT
+    RegApp(RegApp),          // APPID
+    Block(Block),            // BLOCK_RECORD
+    DimStyle(Box<DimStyle>), // DIMSTYLE
+    Layer(Layer),            // LAYER
+    LineType(LineType),      // LTYPE
+    TextStyle(TextStyle),    // STYLE
+    Ucs(Ucs),                // UCS
+    View(View),              // VIEW
+    Viewport(Viewport),      // VPORT
     Unknown(crate::DxfNode),
 }
 

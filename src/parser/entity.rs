@@ -1,9 +1,9 @@
-use super::{EntityNode, ParEntityNode, ParNode};
+use super::{ParNode, ParseFromNode};
 use crate::*;
 
-impl<'a> ParEntityNode<'a> {
-    pub(super) fn parse(source: &'a ParNode<'a>) -> Self {
-        let target = EntityNode {
+impl ParseFromNode for EntityNode {
+    fn parse_from_node(source: &ParNode) -> Self {
+        EntityNode {
             header: parse_entity_header(source),
             entity: match source.node_type {
                 "LINE" => Entity::Line(Line {
@@ -35,8 +35,7 @@ impl<'a> ParEntityNode<'a> {
                 }),
                 _ => Entity::Unknown(source.into()),
             },
-        };
-        Self { source, target }
+        }
     }
 }
 

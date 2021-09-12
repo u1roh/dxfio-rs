@@ -1,8 +1,8 @@
-use super::{ParNode, ParTableNode, TableNode};
+use super::ParNode;
 use crate::*;
 
-impl<'a> ParTableNode<'a> {
-    pub fn parse(source: &'a ParNode<'a>) -> Self {
+impl super::ParseFromNode for TableNode {
+    fn parse_from_node(source: &ParNode) -> Self {
         let handle = source.atoms.get_or_default(5);
         let entries = source
             .nodes
@@ -60,7 +60,7 @@ impl<'a> ParTableNode<'a> {
                                 _ => {}
                             }
                         }
-                        TableRecord::DimStyle(dst)
+                        TableRecord::DimStyle(Box::new(dst))
                     }
                     "LAYER" => {
                         let mut dst = Layer {
@@ -123,9 +123,6 @@ impl<'a> ParTableNode<'a> {
                 }
             })
             .collect();
-        Self {
-            source,
-            target: TableNode { handle, entries },
-        }
+        TableNode { handle, entries }
     }
 }
