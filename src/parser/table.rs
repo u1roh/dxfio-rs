@@ -1,20 +1,17 @@
-use super::{ParNode, ParseFromNode};
+use super::{FromNode, ParNode};
 use crate::*;
 
-impl ParseFromNode for TableNode {
-    fn parse_from_node(source: &ParNode) -> Self {
-        let handle = source.atoms.get_or_default(5);
-        let entries = source
-            .nodes
-            .iter()
-            .map(TableEntry::parse_from_node)
-            .collect();
-        TableNode { handle, entries }
+impl FromNode for TableNode {
+    fn from_node(source: &ParNode) -> Self {
+        Self {
+            handle: source.atoms.get_or_default(5),
+            entries: source.nodes.iter().map(FromNode::from_node).collect(),
+        }
     }
 }
 
-impl ParseFromNode for TableEntry {
-    fn parse_from_node(source: &ParNode) -> Self {
+impl FromNode for TableEntry {
+    fn from_node(source: &ParNode) -> Self {
         let handle = source
             .atoms
             .get_or_default(if source.node_type == "DIMSTYLE" {
@@ -30,9 +27,9 @@ impl ParseFromNode for TableEntry {
             // "BLOCK_RECORD" => {
             //     unimplemented!()
             // }
-            "DIMSTYLE" => TableRecord::DimStyle(Box::new(DimStyle::parse_from_node(source))),
-            "LAYER" => TableRecord::Layer(Layer::parse_from_node(source)),
-            "LTYPE" => TableRecord::LineType(LineType::parse_from_node(source)),
+            "DIMSTYLE" => TableRecord::DimStyle(Box::new(FromNode::from_node(source))),
+            "LAYER" => TableRecord::Layer(FromNode::from_node(source)),
+            "LTYPE" => TableRecord::LineType(FromNode::from_node(source)),
             // "STYLE" => {
             //     unimplemented!()
             // }
@@ -55,8 +52,8 @@ impl ParseFromNode for TableEntry {
     }
 }
 
-impl ParseFromNode for DimStyle {
-    fn parse_from_node(source: &ParNode) -> Self {
+impl FromNode for DimStyle {
+    fn from_node(source: &ParNode) -> Self {
         assert_eq!(source.node_type, "DIMSTYLE");
         let mut dst = DimStyle::default();
         for atom in source.atoms {
@@ -98,8 +95,8 @@ impl ParseFromNode for DimStyle {
     }
 }
 
-impl ParseFromNode for Layer {
-    fn parse_from_node(source: &ParNode) -> Self {
+impl FromNode for Layer {
+    fn from_node(source: &ParNode) -> Self {
         assert_eq!(source.node_type, "LAYER");
         let mut dst = Layer {
             is_plotted: true,
@@ -124,8 +121,8 @@ impl ParseFromNode for Layer {
     }
 }
 
-impl ParseFromNode for LineType {
-    fn parse_from_node(source: &ParNode) -> Self {
+impl FromNode for LineType {
+    fn from_node(source: &ParNode) -> Self {
         assert_eq!(source.node_type, "LTYPE");
         let mut dst = LineType::default();
         for atom in source.atoms {

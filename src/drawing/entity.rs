@@ -66,7 +66,7 @@ pub enum Space {
 pub enum Entity {
     Line(Line),
     Insert(Insert),
-    Unknown(crate::DxfNode),
+    NotSupported(crate::DxfNode),
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

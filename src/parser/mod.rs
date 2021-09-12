@@ -35,8 +35,8 @@ pub fn bytes_to_string(bytes: &[u8]) -> Result<Cow<str>, EncodingError> {
     }
 }
 
-pub trait ParseFromNode {
-    fn parse_from_node(nodes: &ParNode) -> Self;
+pub trait FromNode {
+    fn from_node(nodes: &ParNode) -> Self;
 }
 
 #[derive(Debug, Clone)]
@@ -44,11 +44,11 @@ pub struct SourceAndTarget<'a, T> {
     pub source: &'a ParNode<'a>,
     pub target: T,
 }
-impl<'a, T: ParseFromNode> SourceAndTarget<'a, T> {
-    fn parse_from_node(source: &'a ParNode<'a>) -> Self {
+impl<'a, T: FromNode> SourceAndTarget<'a, T> {
+    fn from_node(source: &'a ParNode<'a>) -> Self {
         Self {
             source,
-            target: T::parse_from_node(source),
+            target: T::from_node(source),
         }
     }
 }

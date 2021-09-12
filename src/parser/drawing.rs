@@ -26,21 +26,21 @@ impl<'a> ParDrawing<'a> {
                     drawing.tables = section
                         .nodes
                         .iter()
-                        .map(SourceAndTarget::parse_from_node)
+                        .map(SourceAndTarget::from_node)
                         .collect();
                 }
                 Some("BLOCKS") => {
                     drawing.blocks = section
                         .nodes
                         .iter()
-                        .map(SourceAndTarget::parse_from_node)
+                        .map(SourceAndTarget::from_node)
                         .collect();
                 }
                 Some("ENTITIES") => {
                     drawing.entities = section
                         .nodes
                         .iter()
-                        .map(SourceAndTarget::parse_from_node)
+                        .map(SourceAndTarget::from_node)
                         .collect();
                 }
                 Some("OBJECTS") => {}
