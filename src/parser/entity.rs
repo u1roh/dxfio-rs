@@ -3,21 +3,44 @@ use crate::*;
 
 impl FromNode for EntityNode {
     fn from_node(source: &ParNode) -> Self {
-        Self {
-            header: FromNode::from_node(source),
-            entity: FromNode::from_node(source),
+        let (header, entity) = match source.node_type {
+            "INSERT" => {
+                let (header, entity) = FromNode::from_node(source);
+                (header, Entity::Insert(entity))
+            }
+            "DIMENSION" => {
+                let (header, entity) = FromNode::from_node(source);
+                (header, Entity::Dimension(Box::new(entity)))
+            }
+            "LINE" => {
+                let (header, entity) = FromNode::from_node(source);
+                (header, Entity::Line(entity))
+            }
+            _ => {
+                let (header, atoms) = FromNode::from_node(source);
+                let entity = Entity::NotSupported(source.node_type.to_owned(), atoms);
+                (header, entity)
+            }
+        };
+        Self { header, entity }
+    }
+}
+
+impl<T: SetAtom> SetAtom for (EntityHeader, T) {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool {
+        if self.0.set_atom(atom) || self.1.set_atom(atom) {
+            true
+        } else {
+            self.0.extras.push((*atom).into());
+            false
         }
     }
 }
 
-impl FromNode for Entity {
-    fn from_node(source: &ParNode) -> Self {
-        match source.node_type {
-            "INSERT" => Self::Insert(FromNode::from_node(source)),
-            "LINE" => Self::Line(FromNode::from_node(source)),
-            "DIMENSION" => Self::Dimension(Box::new(FromNode::from_node(source))),
-            _ => Entity::NotSupported(source.into()),
-        }
+impl SetAtom for Vec<DxfAtom> {
+    fn set_atom(&mut self, atom: &ParAtom) -> bool {
+        self.push((*atom).into());
+        true
     }
 }
 

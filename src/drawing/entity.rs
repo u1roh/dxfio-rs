@@ -80,7 +80,7 @@ pub enum Entity {
     Insert(Insert),
     Line(Line),
     Dimension(Box<Dimension>),
-    NotSupported(crate::DxfNode),
+    NotSupported(String, Vec<DxfAtom>),
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]

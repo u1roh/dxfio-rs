@@ -17,7 +17,7 @@ impl DxfAtom {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DxfNode {
     pub node_type: String,
     pub atoms: Vec<DxfAtom>,
