@@ -38,6 +38,11 @@ impl<'a> ParAtom<'a> {
             *dst = value;
         }
     }
+    pub fn get_bool_to(&self, dst: &mut bool) {
+        if let Some(value) = self.get::<i32>() {
+            *dst = value != 0;
+        }
+    }
 }
 
 impl<'a> From<ParAtom<'a>> for crate::DxfAtom {

@@ -36,8 +36,8 @@ pub struct DimStyle {
     pub general_dimensioning_suffix: String,   // 3 DIMPOST
     pub alternate_dimensioning_suffix: String, // 4 DIMAPOST
     pub arrow_block_name: String,              // 5 DIMBLK (obsolete, now object ID)
-    pub arrow_block_name_1st: String,          // 6 DIMBLK1 (obsolete, now object ID)
-    pub arrow_block_name_2nd: String,          // 7 DIMBLK2 (obsolete, now object ID)
+    pub arrow1_block_name: String,             // 6 DIMBLK1 (obsolete, now object ID)
+    pub arrow2_block_name: String,             // 7 DIMBLK2 (obsolete, now object ID)
     pub scale_factor: f64,                     // 40 DIMSCALE
     pub arrow_size: f64,                       // 41 DIMASZ
     pub extension_line_offset: f64,            // 42 DIMEXO
@@ -48,21 +48,21 @@ pub struct DimStyle {
     pub plus_tolerance: f64,                   // 47 DIMTP
     pub minus_tolerance: f64,                  // 48 DIMTM
     pub text_height: f64,                      // 140 DIMTXT
-                                               // pub _: f64,    // 141 DIMCEN
-                                               // pub _: f64,    // 142 DIMTSZ
-                                               // pub _: f64,    // 143 DIMALTF
-                                               // pub _: f64,    // 144 DIMLFAC
-                                               // pub _: f64,    // 145 DIMTVP
-                                               // pub _: f64,    // 146 DIMTFAC
-                                               // pub _: f64,    // 147 DIMGAP
-                                               // pub _: f64,    // 148 DIMALTRND
-                                               // pub _: i16,    // 71 DIMTOL
-                                               // pub _: i16,    // 72 DIMLIM
-                                               // pub _: i16,    // 73 DIMTIH
-                                               // pub _: i16,    // 74 DIMTOH
-                                               // pub _: i16,    // 75 DIMSE1
-                                               // pub _: i16,    // 76 DIMSE2
-                                               // pub _: i16,    // 77 DIMTAD
+    pub center_mark_size: f64,                 // 141 DIMCEN
+    pub tick_size: f64,                        // 142 DIMTSZ
+    pub alternate_unit_scale_factor: f64,      // 143 DIMALTF
+    pub linear_measurement_scale_factor: f64,  // 144 DIMLFAC
+    pub text_vertical_position: f64,           // 145 DIMTVP
+    pub tolerance_display_scale_factor: f64,   // 146 DIMTFAC
+    pub dimension_line_gap: f64,               // 147 DIMGAP
+    pub alternate_unit_rounding: f64,          // 148 DIMALTRND
+    pub tolerance: i16,                        // 71 DIMTOL
+    pub dimension_limits: i16,                 // 72 DIMLIM
+    pub text_inside_horizontal: i16,           // 73 DIMTIH
+    pub text_outside_horizontal: i16,          // 74 DIMTOH
+    pub extension_line1_suppressed: bool,      // 75 DIMSE1
+    pub extension_line2_suppressed: bool,      // 76 DIMSE2
+    pub text_above_dimension_line: bool,       // 77 DIMTAD
                                                // pub _: i16,    // 78 DIMZIN
                                                // pub _: i16,    // 79 DIMAZIN
                                                // pub _: i16,    // 170 DIMALT
