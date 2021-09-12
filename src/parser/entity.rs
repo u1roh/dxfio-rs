@@ -3,26 +3,21 @@ use crate::*;
 
 impl FromNode for EntityNode {
     fn from_node(source: &ParNode) -> Self {
-        let (header, entity) = match source.node_type {
-            "INSERT" => {
-                let (header, entity) = FromNode::from_node(source);
-                (header, Entity::Insert(entity))
-            }
-            "DIMENSION" => {
-                let (header, entity) = FromNode::from_node(source);
-                (header, Entity::Dimension(Box::new(entity)))
-            }
-            "LINE" => {
-                let (header, entity) = FromNode::from_node(source);
-                (header, Entity::Line(entity))
-            }
-            _ => {
-                let (header, atoms) = FromNode::from_node(source);
-                let entity = Entity::NotSupported(source.node_type.to_owned(), atoms);
-                (header, entity)
-            }
-        };
-        Self { header, entity }
+        match source.node_type {
+            "INSERT" => parse_by(source, Entity::Insert),
+            "DIMENSION" => parse_by(source, Entity::Dimension),
+            "LINE" => parse_by(source, Entity::Line),
+            _ => parse_by(source, |atoms| {
+                Entity::NotSupported(source.node_type.to_owned(), atoms)
+            }),
+        }
+    }
+}
+fn parse_by<T: SetAtom>(source: &ParNode, f: impl Fn(T) -> Entity) -> EntityNode {
+    let (header, entity) = FromNode::from_node(source);
+    EntityNode {
+        header,
+        entity: f(entity),
     }
 }
 
@@ -83,7 +78,7 @@ impl SetAtom for Insert {
     }
 }
 
-impl SetAtom for Dimension {
+impl SetAtom for Box<Dimension> {
     fn set_atom(&mut self, atom: &ParAtom) -> bool {
         match atom.code {
             280 => atom.get_to(&mut self.version),
