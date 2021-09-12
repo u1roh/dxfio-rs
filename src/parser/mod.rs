@@ -1,6 +1,9 @@
 mod atom;
+mod block;
 mod drawing;
+mod entity;
 mod node;
+mod table;
 
 pub use atom::ParAtom;
 pub use drawing::*;
@@ -31,3 +34,14 @@ pub fn bytes_to_string(bytes: &[u8]) -> Result<Cow<str>, EncodingError> {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct SourceAndTarget<'a, T> {
+    pub source: &'a ParNode<'a>,
+    pub target: T,
+}
+
+use crate::{BlockNode, EntityNode, TableNode};
+pub type ParEntityNode<'a> = SourceAndTarget<'a, EntityNode>;
+pub type ParTableNode<'a> = SourceAndTarget<'a, TableNode>;
+pub type ParBlockNode<'a> = SourceAndTarget<'a, BlockNode>;
