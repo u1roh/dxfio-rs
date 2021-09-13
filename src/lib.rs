@@ -1,4 +1,5 @@
 pub mod parser;
+use std::borrow::Cow;
 
 mod drawing;
 pub use drawing::*;
@@ -41,10 +42,38 @@ impl DxfNode {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum Value<'a> {
+    String(Cow<'a, str>),
+    F64(f64),
+    I64(i64),
+    I32(i32),
+    I16(i16),
+    Bool(bool),
+    Handle(u32),
+    Bytes(Vec<u8>),
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Atom<'a> {
+    pub code: i16,
+    pub value: Value<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Node<'a> {
+    pub node_type: Cow<'a, str>,
+    pub atoms: Cow<'a, [Atom<'a>]>,
+    pub nodes: Vec<Self>,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum DxfParseError {
     #[error(transparent)]
     ParseIntError(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    ParseFloatError(#[from] std::num::ParseFloatError),
 
     #[error(transparent)]
     EncodingError(#[from] parser::EncodingError),

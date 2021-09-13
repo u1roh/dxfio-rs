@@ -53,3 +53,38 @@ impl<'a> From<ParAtom<'a>> for crate::DxfAtom {
         }
     }
 }
+
+use crate::{Atom, DxfParseResult, Value};
+use std::borrow::Cow;
+impl<'a> Atom<'a> {
+    pub fn parse(s: &'a str) -> DxfParseResult<Vec<Self>> {
+        s.lines()
+            .collect::<Vec<_>>()
+            .chunks(2)
+            .map(|chunk| {
+                let code = chunk[0].trim().parse::<i16>()?;
+                let value = chunk[1].trim();
+                let value = match code {
+                    10..=59 | 110..=149 | 210..=239 | 460..=469 | 1010..=1059 => {
+                        Value::F64(value.parse()?)
+                    }
+                    60..=79 | 170..=179 | 400..=409 | 1060..=1070 => Value::I16(value.parse()?),
+                    90..=99 | 420..=429 | 440..=449 | 1071 => Value::I32(value.parse()?),
+                    160..=169 => Value::I64(value.parse()?),
+                    290..=299 => Value::Bool(value != "0"),
+                    105 | 320..=329 | 390..=399 | 480..=481 => {
+                        Value::Handle(u32::from_str_radix(value, 16)?)
+                    }
+                    310..=319 => Value::Bytes(
+                        (0..value.len())
+                            .step_by(2)
+                            .map(|i| u8::from_str_radix(&value[i..i + 2], 16))
+                            .collect::<Result<_, _>>()?,
+                    ),
+                    _ => Value::String(Cow::Borrowed(value)),
+                };
+                Ok(Self { code, value })
+            })
+            .collect()
+    }
+}
