@@ -61,6 +61,25 @@ impl<'a> Value<'a> {
             None
         }
     }
+    pub fn as_f64(&self) -> Option<f64> {
+        if let Self::F64(x) = self {
+            Some(*x)
+        } else {
+            None
+        }
+    }
+    pub fn into_owned(self) -> Value<'static> {
+        match self {
+            Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
+            Self::F64(x) => Value::F64(x),
+            Self::I64(x) => Value::I64(x),
+            Self::I32(x) => Value::I32(x),
+            Self::I16(x) => Value::I16(x),
+            Self::Bool(x) => Value::Bool(x),
+            Self::Handle(x) => Value::Handle(x),
+            Self::Bytes(x) => Value::Bytes(x),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -68,12 +87,52 @@ pub struct Atom<'a> {
     pub code: i16,
     pub value: Value<'a>,
 }
+impl<'a> Atom<'a> {
+    fn into_owned(self) -> Atom<'static> {
+        Atom {
+            code: self.code,
+            value: self.value.into_owned(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Node<'a> {
     pub node_type: Cow<'a, str>,
     pub atoms: Cow<'a, [Atom<'a>]>,
     pub nodes: Vec<Self>,
+}
+impl Node<'static> {
+    pub fn open(path: impl AsRef<std::path::Path>) -> DxfParseResult<Vec<Self>> {
+        let bytes = std::fs::read(path)?;
+        Self::parse_bytes(&bytes)
+    }
+    pub fn parse_bytes(bytes: &[u8]) -> DxfParseResult<Vec<Self>> {
+        let s = parser::bytes_to_string(bytes)?;
+        Self::parse_str(&s)
+    }
+    pub fn parse_str(s: &str) -> DxfParseResult<Vec<Self>> {
+        let atoms = Atom::parse(s)?;
+        Ok(Node::parse(&atoms)
+            .into_iter()
+            .map(|node| node.into_owned())
+            .collect())
+    }
+}
+impl<'a> Node<'a> {
+    pub fn into_owned(self) -> Node<'static> {
+        Node {
+            node_type: Cow::Owned(self.node_type.into_owned()),
+            atoms: Cow::Owned(
+                self.atoms
+                    .into_owned()
+                    .into_iter()
+                    .map(|a| a.into_owned())
+                    .collect(),
+            ),
+            nodes: self.nodes.into_iter().map(|n| n.into_owned()).collect(),
+        }
+    }
 }
 
 #[derive(Debug, thiserror::Error)]

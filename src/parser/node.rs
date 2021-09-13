@@ -90,8 +90,17 @@ fn is_node_starting_code(code: i16) -> bool {
     code == 0 || code == 9
 }
 
+// ----------------------------------------------
+
 use crate::{Atom, Node};
 use std::borrow::Cow;
+
+impl<'a> Node<'a> {
+    pub fn parse(atoms: &'a [Atom<'a>]) -> Vec<Self> {
+        NodeParser2 { atoms }.parse_nodes(0).unwrap_or_default().0
+    }
+}
+
 struct NodeParser2<'a> {
     atoms: &'a [Atom<'a>],
 }

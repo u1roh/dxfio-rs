@@ -66,3 +66,38 @@ impl<'a, T: FromNode> SourceAndTarget<'a, T> {
         }
     }
 }
+
+// ----------------------------------
+use crate::{Atom, Node};
+
+pub trait FromNode2 {
+    fn from_node(source: &Node) -> Self;
+}
+
+pub trait SetAtom2: Default {
+    fn set_atom(&mut self, atom: &Atom) -> bool;
+}
+
+impl<T: SetAtom2> FromNode2 for T {
+    fn from_node(source: &Node) -> Self {
+        let mut dst = Self::default();
+        for atom in source.atoms.iter() {
+            dst.set_atom(atom);
+        }
+        dst
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SourceAndTarget2<'a, T> {
+    pub source: &'a Node<'a>,
+    pub target: T,
+}
+impl<'a, T: FromNode2> SourceAndTarget2<'a, T> {
+    fn from_node(source: &'a Node<'a>) -> Self {
+        Self {
+            source,
+            target: T::from_node(source),
+        }
+    }
+}
