@@ -53,6 +53,15 @@ pub enum Value<'a> {
     Handle(u32),
     Bytes(Vec<u8>),
 }
+impl<'a> Value<'a> {
+    pub fn as_str(&self) -> Option<&str> {
+        if let Self::String(s) = self {
+            Some(s)
+        } else {
+            None
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Atom<'a> {
