@@ -58,15 +58,14 @@ impl SetAtom for Line {
 impl SetAtom2 for Line {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
-            10 => self.p1[0] = atom.value.as_f64().unwrap_or_default(),
-            20 => self.p1[1] = atom.value.as_f64().unwrap_or_default(),
-            30 => self.p1[2] = atom.value.as_f64().unwrap_or_default(),
-            11 => self.p2[0] = atom.value.as_f64().unwrap_or_default(),
-            21 => self.p2[1] = atom.value.as_f64().unwrap_or_default(),
-            31 => self.p2[2] = atom.value.as_f64().unwrap_or_default(),
-            _ => return false,
+            10 => atom.value.get_to(&mut self.p1[0]),
+            20 => atom.value.get_to(&mut self.p1[1]),
+            30 => atom.value.get_to(&mut self.p1[2]),
+            11 => atom.value.get_to(&mut self.p2[0]),
+            21 => atom.value.get_to(&mut self.p2[1]),
+            31 => atom.value.get_to(&mut self.p2[2]),
+            _ => false,
         }
-        true
     }
 }
 

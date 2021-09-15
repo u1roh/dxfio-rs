@@ -114,7 +114,7 @@ impl<'a> NodeParser2<'a> {
             start = end;
             nodes.push(node);
         }
-        if self.atoms[start].value.as_str() == Some("EOF") {
+        if self.atoms[start].value.get() == Some("EOF") {
             Some((nodes, start))
         } else {
             None
@@ -123,7 +123,7 @@ impl<'a> NodeParser2<'a> {
     fn parse_node(&self, start: usize) -> Option<(Node<'a>, usize)> {
         const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
         assert!(is_node_starting_code(self.atoms[start].code));
-        let node_type = self.atoms[start].value.as_str().unwrap_or_default();
+        let node_type = self.atoms[start].value.get().unwrap_or_default();
         if CONTAINER_TYPES.contains(&node_type) {
             self.parse_container(node_type, start + 1)
         } else {

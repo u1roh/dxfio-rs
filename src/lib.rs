@@ -4,6 +4,9 @@ use std::borrow::Cow;
 mod drawing;
 pub use drawing::*;
 
+mod value;
+pub use value::*;
+
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DxfAtom {
     pub code: i16,
@@ -39,46 +42,6 @@ impl DxfNode {
             .into_iter()
             .map(Into::into)
             .collect())
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum Value<'a> {
-    String(Cow<'a, str>),
-    F64(f64),
-    I64(i64),
-    I32(i32),
-    I16(i16),
-    Bool(bool),
-    Handle(u32),
-    Bytes(Vec<u8>),
-}
-impl<'a> Value<'a> {
-    pub fn as_str(&self) -> Option<&str> {
-        if let Self::String(s) = self {
-            Some(s)
-        } else {
-            None
-        }
-    }
-    pub fn as_f64(&self) -> Option<f64> {
-        if let Self::F64(x) = self {
-            Some(*x)
-        } else {
-            None
-        }
-    }
-    pub fn into_owned(self) -> Value<'static> {
-        match self {
-            Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
-            Self::F64(x) => Value::F64(x),
-            Self::I64(x) => Value::I64(x),
-            Self::I32(x) => Value::I32(x),
-            Self::I16(x) => Value::I16(x),
-            Self::Bool(x) => Value::Bool(x),
-            Self::Handle(x) => Value::Handle(x),
-            Self::Bytes(x) => Value::Bytes(x),
-        }
     }
 }
 
