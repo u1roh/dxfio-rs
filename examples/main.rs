@@ -6,6 +6,6 @@ fn main() {
     let s = dxfio::parser::bytes_to_string(&bytes).unwrap();
     let atoms = dxfio::Atom::parse_str(&s).unwrap();
     let nodes = dxfio::Node::parse_atoms(&atoms);
-    let drawing = dxfio::Drawing::parse_nodes(&nodes);
+    let drawing = dxfio::Document::parse_nodes(&nodes);
     println!("{:?}", drawing);
 }

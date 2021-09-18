@@ -10,7 +10,7 @@ fn main() {
     };
     println!("dxf_path = {}, svg_path = {}", dxf_path, svg_path);
 
-    let drawing = dxfio::Drawing::open(&dxf_path).unwrap();
+    let drawing = dxfio::Document::open(&dxf_path).unwrap();
 
     let view_box = {
         let min = &drawing
@@ -50,7 +50,7 @@ fn main() {
 fn draw_entity(
     mut svg: svg::Document,
     entity: &dxfio::EntityNode,
-    drawing: &dxfio::Drawing,
+    drawing: &dxfio::Document,
     transform: &dyn Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
     match &entity.entity {
@@ -69,7 +69,7 @@ fn draw_entity(
 fn draw_insert(
     mut svg: svg::Document,
     insert: &dxfio::Insert,
-    drawing: &dxfio::Drawing,
+    drawing: &dxfio::Document,
     transform: &dyn Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
     if let Some(block) = drawing

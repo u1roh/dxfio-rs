@@ -1,7 +1,7 @@
 pub mod parser;
 
-mod drawing;
-pub use drawing::*;
+mod model;
+pub use model::*;
 
 mod value;
 pub use value::Value;

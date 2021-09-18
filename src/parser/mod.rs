@@ -2,10 +2,10 @@ mod block;
 mod entity;
 mod table;
 
-use crate::{Atom, AtomList, Drawing, Node};
+use crate::{Atom, AtomList, Document, Node};
 use std::borrow::Cow;
 
-impl Drawing {
+impl Document {
     pub fn parse_nodes(nodes: &[Node]) -> Self {
         let mut drawing = Self {
             headers: Vec::new(),

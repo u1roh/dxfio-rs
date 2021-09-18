@@ -5,13 +5,13 @@ pub use entity::*;
 pub use table::*;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
-pub struct Drawing {
+pub struct Document {
     pub headers: Vec<Node<'static>>, // 暫定措置
     pub tables: Vec<TableNode>,
     pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
 }
-impl Drawing {
+impl Document {
     pub fn open(path: impl AsRef<std::path::Path>) -> ParseResult<Self> {
         let bytes = std::fs::read(path)?;
         Self::parse_bytes(&bytes)
