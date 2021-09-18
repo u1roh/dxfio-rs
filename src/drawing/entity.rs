@@ -37,10 +37,10 @@ impl Default for LineTypeRef {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum ShadowMode {
-    CastsAndReceivesShadows = 0,
-    CastsShadows = 1,
-    ReceivesShadows = 2,
-    IgnoresShadows = 3,
+    CastsAndReceivesShadows,
+    CastsShadows,
+    ReceivesShadows,
+    IgnoresShadows,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]

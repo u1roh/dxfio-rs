@@ -4,16 +4,16 @@ use crate::*;
 impl FromNode for EntityNode {
     fn from_node(source: &Node) -> Self {
         match source.node_type.as_ref() {
-            "INSERT" => parse_by2(source, Entity::Insert),
-            "DIMENSION" => parse_by2(source, Entity::Dimension),
-            "LINE" => parse_by2(source, Entity::Line),
-            _ => parse_by2(source, |atoms| {
+            "INSERT" => parse_by(source, Entity::Insert),
+            "DIMENSION" => parse_by(source, Entity::Dimension),
+            "LINE" => parse_by(source, Entity::Line),
+            _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
         }
     }
 }
-fn parse_by2<T: SetAtom>(source: &Node, f: impl Fn(T) -> Entity) -> EntityNode {
+fn parse_by<T: SetAtom>(source: &Node, f: impl Fn(T) -> Entity) -> EntityNode {
     let (header, entity) = FromNode::from_node(source);
     EntityNode {
         header,

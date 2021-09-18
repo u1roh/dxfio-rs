@@ -1,11 +1,45 @@
 mod block;
-mod drawing;
 mod entity;
 mod table;
 
-pub use drawing::*;
-
+use crate::{Atom, AtomList, Drawing, Node};
 use std::borrow::Cow;
+
+impl Drawing {
+    pub fn parse_nodes(nodes: &[Node]) -> Self {
+        let mut drawing = Self {
+            headers: Vec::new(),
+            tables: Vec::new(),
+            blocks: Vec::new(),
+            entities: Vec::new(),
+        };
+        for section in nodes {
+            match section.atoms.get_value(2) {
+                Some("HEADER") => {
+                    drawing.headers = section.nodes.iter().map(Node::to_owned).collect();
+                }
+                Some("CLASSES") => {}
+                Some("TABLES") => {
+                    drawing.tables = section.nodes.iter().map(FromNode::from_node).collect();
+                }
+                Some("BLOCKS") => {
+                    drawing.blocks = section.nodes.iter().map(FromNode::from_node).collect();
+                }
+                Some("ENTITIES") => {
+                    drawing.entities = section.nodes.iter().map(FromNode::from_node).collect();
+                }
+                Some("OBJECTS") => {}
+                Some(unknown) => {
+                    println!("unknown section: {}", unknown);
+                }
+                None => {
+                    println!("section type not found");
+                }
+            }
+        }
+        drawing
+    }
+}
 
 #[derive(Debug, Clone, Copy, thiserror::Error)]
 #[error("{:?}", self)]
@@ -31,9 +65,6 @@ pub fn bytes_to_string(bytes: &[u8]) -> Result<Cow<str>, EncodingError> {
     }
 }
 
-// ----------------------------------
-use crate::{Atom, Node};
-
 pub trait FromNode {
     fn from_node(source: &Node) -> Self;
 }
@@ -49,19 +80,5 @@ impl<T: SetAtom> FromNode for T {
             dst.set_atom(atom);
         }
         dst
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct SourceAndTarget2<'a, T> {
-    pub source: &'a Node<'a>,
-    pub target: T,
-}
-impl<'a, T: FromNode> SourceAndTarget2<'a, T> {
-    fn from_node(source: &'a Node<'a>) -> Self {
-        Self {
-            source,
-            target: T::from_node(source),
-        }
     }
 }

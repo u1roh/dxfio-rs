@@ -27,9 +27,6 @@ impl Drawing {
     pub fn parse_atoms(atoms: &[crate::Atom]) -> Self {
         Self::parse_nodes(&crate::Node::parse_atoms(atoms))
     }
-    pub fn parse_nodes<'a>(nodes: &'a [crate::Node<'a>]) -> Self {
-        crate::parser::ParDrawing::parse(nodes).into()
-    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

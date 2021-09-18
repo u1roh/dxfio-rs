@@ -2,7 +2,7 @@ use crate::*;
 
 impl super::FromNode for BlockNode {
     fn from_node(source: &Node) -> Self {
-        let mut target = BlockNode {
+        let mut target = Self {
             handle: 0,
             layer: String::default(),
             block_name: String::default(),
