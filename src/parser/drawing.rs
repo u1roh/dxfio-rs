@@ -1,13 +1,8 @@
 use super::SourceAndTarget2;
-use super::{ParNode, SourceAndTarget};
 use crate::*;
 
 #[derive(Debug, Clone)]
 pub struct ParDrawing<'a> {
-    // pub headers: &'a [ParNode<'a>],
-    // pub tables: Vec<SourceAndTarget<'a, TableNode>>,
-    // pub blocks: Vec<SourceAndTarget<'a, BlockNode>>,
-    // pub entities: Vec<SourceAndTarget<'a, EntityNode>>,
     pub headers: &'a [Node<'a>],
     pub tables: Vec<SourceAndTarget2<'a, TableNode>>,
     pub blocks: Vec<SourceAndTarget2<'a, BlockNode>>,
