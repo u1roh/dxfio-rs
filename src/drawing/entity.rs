@@ -1,4 +1,4 @@
-use crate::DxfAtom;
+use crate::Atom;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EntityNode {
@@ -20,7 +20,7 @@ pub struct EntityHeader {
     pub color_name: Option<String>,      // 430  String
     pub transparency: Option<i32>,       // 440  i32
     pub shadow_mode: Option<ShadowMode>, // 284  i16
-    pub extras: Vec<DxfAtom>,
+    pub extras: Vec<Atom<'static>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -80,7 +80,7 @@ pub enum Entity {
     Insert(Insert),
     Line(Line),
     Dimension(Box<Dimension>),
-    NotSupported(String, Vec<DxfAtom>),
+    NotSupported(String, Vec<Atom<'static>>),
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]

@@ -60,7 +60,8 @@ fn draw_entity(
         dxfio::Entity::Line(line) => {
             svg = draw_line(svg, line, transform);
         }
-        dxfio::Entity::Unknown(_) => {}
+        dxfio::Entity::NotSupported(_, _) => {}
+        _ => unimplemented!(),
     }
     svg
 }

@@ -1,6 +1,6 @@
 mod entity;
 mod table;
-use crate::{DxfNode, DxfParseResult, Node};
+use crate::{DxfParseResult, Node};
 pub use entity::*;
 pub use table::*;
 

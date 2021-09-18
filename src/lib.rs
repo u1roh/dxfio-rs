@@ -7,19 +7,6 @@ pub use drawing::*;
 mod value;
 pub use value::Value;
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct DxfAtom {
-    pub code: i16,
-    pub value: String,
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct DxfNode {
-    pub node_type: String,
-    pub atoms: Vec<DxfAtom>,
-    pub nodes: Vec<Self>,
-}
-
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Atom<'a> {
     pub code: i16,
@@ -85,11 +72,11 @@ pub enum DxfParseError {
 pub type DxfParseResult<T> = Result<T, DxfParseError>;
 
 pub trait DxfAtomList {
-    fn find(&self, code: i16) -> Option<&str>;
-    fn get<T: std::str::FromStr>(&self, code: i16) -> Option<T> {
-        self.find(code)?.parse().ok()
+    fn find(&self, code: i16) -> Option<&Value>;
+    fn get<'a, T: value::FromValue<'a>>(&'a self, code: i16) -> Option<T> {
+        self.find(code)?.get()
     }
-    fn get_or_default<T: std::str::FromStr + Default>(&self, code: i16) -> T {
+    fn get_or_default<'a, T: value::FromValue<'a> + Default>(&'a self, code: i16) -> T {
         self.get(code).unwrap_or_default()
     }
     fn get_point(&self, i: usize) -> [f64; 3] {
@@ -101,10 +88,10 @@ pub trait DxfAtomList {
     }
 }
 
-impl DxfAtomList for &[DxfAtom] {
-    fn find(&self, code: i16) -> Option<&str> {
+impl<'a> DxfAtomList for &[Atom<'a>] {
+    fn find(&self, code: i16) -> Option<&Value> {
         self.iter()
             .find(|item| item.code == code)
-            .map(|item| &item.value as _)
+            .map(|item| &item.value)
     }
 }

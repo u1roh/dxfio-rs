@@ -26,17 +26,15 @@ impl<T: SetAtom2> SetAtom2 for (EntityHeader, T) {
         if SetAtom2::set_atom(&mut self.0, atom) || self.1.set_atom(atom) {
             true
         } else {
-            unimplemented!();
-            // self.0.extras.push((*atom).into());
+            self.0.extras.push(atom.to_owned());
             false
         }
     }
 }
 
-impl SetAtom2 for Vec<DxfAtom> {
+impl<'a> SetAtom2 for Vec<Atom<'static>> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
-        unimplemented!();
-        // self.push((*atom).into());
+        self.push(atom.to_owned());
         true
     }
 }
