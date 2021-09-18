@@ -36,15 +36,15 @@ pub fn bytes_to_string(bytes: &[u8]) -> Result<Cow<str>, EncodingError> {
 // ----------------------------------
 use crate::{Atom, Node};
 
-pub trait FromNode2 {
+pub trait FromNode {
     fn from_node(source: &Node) -> Self;
 }
 
-pub trait SetAtom2: Default {
+pub trait SetAtom: Default {
     fn set_atom(&mut self, atom: &Atom) -> bool;
 }
 
-impl<T: SetAtom2> FromNode2 for T {
+impl<T: SetAtom> FromNode for T {
     fn from_node(source: &Node) -> Self {
         let mut dst = Self::default();
         for atom in source.atoms.iter() {
@@ -59,7 +59,7 @@ pub struct SourceAndTarget2<'a, T> {
     pub source: &'a Node<'a>,
     pub target: T,
 }
-impl<'a, T: FromNode2> SourceAndTarget2<'a, T> {
+impl<'a, T: FromNode> SourceAndTarget2<'a, T> {
     fn from_node(source: &'a Node<'a>) -> Self {
         Self {
             source,

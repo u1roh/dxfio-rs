@@ -1,8 +1,8 @@
 use crate::*;
 
-use super::FromNode2;
+use super::FromNode;
 
-impl FromNode2 for TableNode {
+impl FromNode for TableNode {
     fn from_node(source: &Node) -> Self {
         Self {
             handle: source
@@ -11,12 +11,12 @@ impl FromNode2 for TableNode {
                 .find(|a| a.code == 5)
                 .and_then(|a| a.value.get())
                 .unwrap_or_default(),
-            entries: source.nodes.iter().map(FromNode2::from_node).collect(),
+            entries: source.nodes.iter().map(FromNode::from_node).collect(),
         }
     }
 }
 
-impl FromNode2 for TableEntry {
+impl FromNode for TableEntry {
     fn from_node(source: &Node) -> Self {
         let handle = {
             let code = if source.node_type == "DIMSTYLE" {
@@ -44,9 +44,9 @@ impl FromNode2 for TableEntry {
             // "BLOCK_RECORD" => {
             //     unimplemented!()
             // }
-            "DIMSTYLE" => TableRecord::DimStyle(Box::new(FromNode2::from_node(source))),
-            "LAYER" => TableRecord::Layer(FromNode2::from_node(source)),
-            "LTYPE" => TableRecord::LineType(FromNode2::from_node(source)),
+            "DIMSTYLE" => TableRecord::DimStyle(Box::new(FromNode::from_node(source))),
+            "LAYER" => TableRecord::Layer(FromNode::from_node(source)),
+            "LTYPE" => TableRecord::LineType(FromNode::from_node(source)),
             // "STYLE" => {
             //     unimplemented!()
             // }
@@ -69,7 +69,7 @@ impl FromNode2 for TableEntry {
     }
 }
 
-impl FromNode2 for DimStyle {
+impl FromNode for DimStyle {
     fn from_node(source: &Node) -> Self {
         assert_eq!(source.node_type, "DIMSTYLE");
         let mut dst = DimStyle::default();
@@ -123,7 +123,7 @@ impl FromNode2 for DimStyle {
     }
 }
 
-impl FromNode2 for Layer {
+impl FromNode for Layer {
     fn from_node(source: &Node) -> Self {
         assert_eq!(source.node_type, "LAYER");
         let mut dst = Layer {
@@ -152,7 +152,7 @@ impl FromNode2 for Layer {
     }
 }
 
-impl FromNode2 for LineType {
+impl FromNode for LineType {
     fn from_node(source: &Node) -> Self {
         assert_eq!(source.node_type, "LTYPE");
         let mut dst = LineType::default();

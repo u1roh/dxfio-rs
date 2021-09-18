@@ -1,6 +1,6 @@
 use crate::*;
 
-impl super::FromNode2 for BlockNode {
+impl super::FromNode for BlockNode {
     fn from_node(source: &Node) -> Self {
         let mut target = BlockNode {
             handle: 0,
@@ -28,7 +28,7 @@ impl super::FromNode2 for BlockNode {
         target.entities = source
             .nodes
             .iter()
-            .map(super::FromNode2::from_node)
+            .map(super::FromNode::from_node)
             .collect();
         target
     }

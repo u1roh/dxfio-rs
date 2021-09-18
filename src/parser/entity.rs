@@ -1,7 +1,7 @@
-use super::{FromNode2, SetAtom2};
+use super::{FromNode, SetAtom};
 use crate::*;
 
-impl FromNode2 for EntityNode {
+impl FromNode for EntityNode {
     fn from_node(source: &Node) -> Self {
         match source.node_type.as_ref() {
             "INSERT" => parse_by2(source, Entity::Insert),
@@ -13,17 +13,17 @@ impl FromNode2 for EntityNode {
         }
     }
 }
-fn parse_by2<T: SetAtom2>(source: &Node, f: impl Fn(T) -> Entity) -> EntityNode {
-    let (header, entity) = FromNode2::from_node(source);
+fn parse_by2<T: SetAtom>(source: &Node, f: impl Fn(T) -> Entity) -> EntityNode {
+    let (header, entity) = FromNode::from_node(source);
     EntityNode {
         header,
         entity: f(entity),
     }
 }
 
-impl<T: SetAtom2> SetAtom2 for (EntityHeader, T) {
+impl<T: SetAtom> SetAtom for (EntityHeader, T) {
     fn set_atom(&mut self, atom: &Atom) -> bool {
-        if SetAtom2::set_atom(&mut self.0, atom) || self.1.set_atom(atom) {
+        if SetAtom::set_atom(&mut self.0, atom) || self.1.set_atom(atom) {
             true
         } else {
             self.0.extras.push(atom.to_owned());
@@ -32,14 +32,14 @@ impl<T: SetAtom2> SetAtom2 for (EntityHeader, T) {
     }
 }
 
-impl<'a> SetAtom2 for Vec<Atom<'static>> {
+impl<'a> SetAtom for Vec<Atom<'static>> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         self.push(atom.to_owned());
         true
     }
 }
 
-impl SetAtom2 for Line {
+impl SetAtom for Line {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
             10 => atom.value.get_to(&mut self.p1[0]),
@@ -53,7 +53,7 @@ impl SetAtom2 for Line {
     }
 }
 
-impl SetAtom2 for Insert {
+impl SetAtom for Insert {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
             2 => atom.value.get_to(&mut self.block_name),
@@ -76,7 +76,7 @@ impl SetAtom2 for Insert {
     }
 }
 
-impl SetAtom2 for Box<Dimension> {
+impl SetAtom for Box<Dimension> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
             280 => atom.value.get_to(&mut self.version),
@@ -171,7 +171,7 @@ impl<'a> crate::value::FromValue<'a> for TextLineSpacingStyle {
     }
 }
 
-impl SetAtom2 for EntityHeader {
+impl SetAtom for EntityHeader {
     fn set_atom(&mut self, atom: &super::Atom) -> bool {
         match atom.code {
             5 => atom.value.get_to(&mut self.handle),

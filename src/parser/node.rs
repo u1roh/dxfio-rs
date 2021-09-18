@@ -1,22 +1,16 @@
-fn is_node_starting_code(code: i16) -> bool {
-    code == 0 || code == 9
-}
-
-// ----------------------------------------------
-
 use crate::{Atom, Node};
 use std::borrow::Cow;
 
 impl<'a> Node<'a> {
     pub fn parse(atoms: &'a [Atom<'a>]) -> Vec<Self> {
-        NodeParser2 { atoms }.parse_nodes(0).unwrap_or_default().0
+        NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
 }
 
-struct NodeParser2<'a> {
+struct NodeParser<'a> {
     atoms: &'a [Atom<'a>],
 }
-impl<'a> NodeParser2<'a> {
+impl<'a> NodeParser<'a> {
     fn parse_nodes(&self, mut start: usize) -> Option<(Vec<Node<'a>>, usize)> {
         let mut nodes = vec![];
         while let Some((node, end)) = self.parse_node(start) {
@@ -60,4 +54,8 @@ impl<'a> NodeParser2<'a> {
                 (entity, end)
             })
     }
+}
+
+fn is_node_starting_code(code: i16) -> bool {
+    code == 0 || code == 9
 }
