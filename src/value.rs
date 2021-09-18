@@ -61,6 +61,20 @@ impl<'a> Value<'a> {
             false
         }
     }
+    pub fn get_optional_coord_to(&self, i: usize, dst: &mut Option<[f64; 3]>) -> bool {
+        if let Some(x) = self.get() {
+            if let Some(dst) = dst {
+                dst[i] = x;
+            } else {
+                let mut coord = [0.0, 0.0, 0.0];
+                coord[i] = x;
+                *dst = Some(coord);
+            }
+            true
+        } else {
+            false
+        }
+    }
     pub fn into_owned(self) -> Value<'static> {
         match self {
             Self::String(s) => Value::String(Cow::Owned(s.into_owned())),

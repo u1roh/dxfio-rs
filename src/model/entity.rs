@@ -79,14 +79,9 @@ impl Default for Space {
 pub enum Entity {
     Insert(Insert),
     Line(Line),
+    Text(Text),
     Dimension(Box<Dimension>),
     NotSupported(String, Vec<Atom<'static>>),
-}
-
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct Line {
-    pub p1: [f64; 3],
-    pub p2: [f64; 3],
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -115,6 +110,63 @@ impl Default for Insert {
             extrusion_direction: [0.0, 0.0, 1.0],
         }
     }
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct Line {
+    pub p1: [f64; 3],
+    pub p2: [f64; 3],
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct Text {
+    pub thickness: Option<f64>,                // 39 (default = 0)
+    pub point1: [f64; 3],                      // 10, 20, 30
+    pub point2: [f64; 3],                      // 11, 21, 31 (ignored if alignment is default)
+    pub height: f64,                           // 40
+    pub text: String,                          // 1
+    pub rotation_degree: Option<f64>,          // 50 (default = 0)
+    pub relative_x_scale_factor: Option<f64>,  // 41 (default = 1)
+    pub oblique_degree: Option<f64>,           // 51 (default = 0)
+    pub style_name: Option<String>,            // 7 (default = STANDARD)
+    pub mirror_flags: Option<TextMirrorFlags>, // 71 (default = 0)
+    pub alignment: TextAlignment,              // 72, 73
+    pub extrusion_vector: Option<[f64; 3]>,    // 210, 220, 230 (default = [0, 0, 1])
+}
+
+#[derive(Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize)]
+pub struct TextMirrorFlags {
+    pub x: bool,
+    pub y: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TextAlignment {
+    Combo(TextHorizontalAlignment, TextVerticalAlignment),
+    Aligned,
+    Middle,
+    Fit,
+}
+impl Default for TextAlignment {
+    fn default() -> Self {
+        Self::Combo(
+            TextHorizontalAlignment::Left,
+            TextVerticalAlignment::Baseline,
+        )
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TextHorizontalAlignment {
+    Left,
+    Center,
+    Right,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum TextVerticalAlignment {
+    Baseline,
+    Bottom,
+    Middle,
+    Top,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]

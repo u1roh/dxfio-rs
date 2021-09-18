@@ -7,6 +7,7 @@ impl FromNode for EntityNode {
             "INSERT" => parse_by(source, Entity::Insert),
             "DIMENSION" => parse_by(source, Entity::Dimension),
             "LINE" => parse_by(source, Entity::Line),
+            "TEXT" => parse_by(source, Entity::Text),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -39,20 +40,6 @@ impl<'a> SetAtom for Vec<Atom<'static>> {
     }
 }
 
-impl SetAtom for Line {
-    fn set_atom(&mut self, atom: &Atom) -> bool {
-        match atom.code {
-            10 => atom.value.get_to(&mut self.p1[0]),
-            20 => atom.value.get_to(&mut self.p1[1]),
-            30 => atom.value.get_to(&mut self.p1[2]),
-            11 => atom.value.get_to(&mut self.p2[0]),
-            21 => atom.value.get_to(&mut self.p2[1]),
-            31 => atom.value.get_to(&mut self.p2[2]),
-            _ => false,
-        }
-    }
-}
-
 impl SetAtom for Insert {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
@@ -71,6 +58,99 @@ impl SetAtom for Insert {
             210 => atom.value.get_to(&mut self.extrusion_direction[0]),
             220 => atom.value.get_to(&mut self.extrusion_direction[1]),
             230 => atom.value.get_to(&mut self.extrusion_direction[2]),
+            _ => false,
+        }
+    }
+}
+
+impl SetAtom for Line {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        match atom.code {
+            10 => atom.value.get_to(&mut self.p1[0]),
+            20 => atom.value.get_to(&mut self.p1[1]),
+            30 => atom.value.get_to(&mut self.p1[2]),
+            11 => atom.value.get_to(&mut self.p2[0]),
+            21 => atom.value.get_to(&mut self.p2[1]),
+            31 => atom.value.get_to(&mut self.p2[2]),
+            _ => false,
+        }
+    }
+}
+
+impl SetAtom for Text {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        match atom.code {
+            1 => atom.value.get_to(&mut self.text),
+            7 => atom.value.get_to(&mut self.style_name),
+            10 => atom.value.get_to(&mut self.point1[0]),
+            20 => atom.value.get_to(&mut self.point1[1]),
+            30 => atom.value.get_to(&mut self.point1[2]),
+            11 => atom.value.get_to(&mut self.point2[0]),
+            21 => atom.value.get_to(&mut self.point2[1]),
+            31 => atom.value.get_to(&mut self.point2[2]),
+            39 => atom.value.get_to(&mut self.thickness),
+            40 => atom.value.get_to(&mut self.height),
+            41 => atom.value.get_to(&mut self.relative_x_scale_factor),
+            50 => atom.value.get_to(&mut self.rotation_degree),
+            51 => atom.value.get_to(&mut self.oblique_degree),
+            71 => {
+                self.mirror_flags = atom.value.get::<i16>().map(|flags| TextMirrorFlags {
+                    x: (flags & 0b010) != 0,
+                    y: (flags & 0b100) != 0,
+                });
+                self.mirror_flags.is_some()
+            }
+            72 => {
+                if let Some(alignment) = atom.value.get::<i16>().and_then(|a| {
+                    let h = match a {
+                        0 => TextHorizontalAlignment::Left,
+                        1 => TextHorizontalAlignment::Center,
+                        2 => TextHorizontalAlignment::Right,
+                        3 => return Some(TextAlignment::Aligned),
+                        4 => return Some(TextAlignment::Middle),
+                        5 => return Some(TextAlignment::Fit),
+                        _ => return None,
+                    };
+                    Some(match self.alignment {
+                        TextAlignment::Combo(_, v) => TextAlignment::Combo(h, v),
+                        _ => TextAlignment::Combo(h, TextVerticalAlignment::Baseline),
+                    })
+                }) {
+                    self.alignment = alignment;
+                    true
+                } else {
+                    false
+                }
+            }
+            73 => {
+                if let Some(alignment) = atom.value.get::<i16>().and_then(|a| {
+                    let v = match a {
+                        0 => TextVerticalAlignment::Baseline,
+                        1 => TextVerticalAlignment::Bottom,
+                        2 => TextVerticalAlignment::Middle,
+                        3 => TextVerticalAlignment::Top,
+                        _ => return None,
+                    };
+                    Some(match self.alignment {
+                        TextAlignment::Combo(h, _) => TextAlignment::Combo(h, v),
+                        _ => TextAlignment::Combo(TextHorizontalAlignment::Left, v),
+                    })
+                }) {
+                    self.alignment = alignment;
+                    true
+                } else {
+                    false
+                }
+            }
+            210 => atom
+                .value
+                .get_optional_coord_to(0, &mut self.extrusion_vector),
+            220 => atom
+                .value
+                .get_optional_coord_to(1, &mut self.extrusion_vector),
+            230 => atom
+                .value
+                .get_optional_coord_to(2, &mut self.extrusion_vector),
             _ => false,
         }
     }
