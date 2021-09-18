@@ -7,19 +7,8 @@ pub use drawing::*;
 mod value;
 pub use value::Value;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct Atom<'a> {
-    pub code: i16,
-    pub value: Value<'a>,
-}
-impl<'a> Atom<'a> {
-    fn to_owned(&self) -> Atom<'static> {
-        Atom {
-            code: self.code,
-            value: self.value.clone().into_owned(),
-        }
-    }
-}
+mod atom;
+pub use atom::Atom;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Node<'a> {
@@ -28,15 +17,15 @@ pub struct Node<'a> {
     pub nodes: Vec<Self>,
 }
 impl Node<'static> {
-    pub fn open(path: impl AsRef<std::path::Path>) -> DxfParseResult<Vec<Self>> {
+    pub fn open(path: impl AsRef<std::path::Path>) -> ParseResult<Vec<Self>> {
         let bytes = std::fs::read(path)?;
         Self::parse_bytes(&bytes)
     }
-    pub fn parse_bytes(bytes: &[u8]) -> DxfParseResult<Vec<Self>> {
+    pub fn parse_bytes(bytes: &[u8]) -> ParseResult<Vec<Self>> {
         let s = parser::bytes_to_string(bytes)?;
         Self::parse_str(&s)
     }
-    pub fn parse_str(s: &str) -> DxfParseResult<Vec<Self>> {
+    pub fn parse_str(s: &str) -> ParseResult<Vec<Self>> {
         let atoms = Atom::parse_str(s)?;
         Ok(Node::parse(&atoms)
             .into_iter()
@@ -55,7 +44,7 @@ impl<'a> Node<'a> {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum DxfParseError {
+pub enum ParseError {
     #[error(transparent)]
     ParseIntError(#[from] std::num::ParseIntError),
 
@@ -69,7 +58,7 @@ pub enum DxfParseError {
     IoError(#[from] std::io::Error),
 }
 
-pub type DxfParseResult<T> = Result<T, DxfParseError>;
+pub type ParseResult<T> = Result<T, ParseError>;
 
 pub trait DxfAtomList {
     fn find(&self, code: i16) -> Option<&Value>;

@@ -1,6 +1,6 @@
 mod entity;
 mod table;
-use crate::{DxfParseResult, Node};
+use crate::{Node, ParseResult};
 pub use entity::*;
 pub use table::*;
 
@@ -12,15 +12,15 @@ pub struct Drawing {
     pub entities: Vec<EntityNode>,
 }
 impl Drawing {
-    pub fn open(path: impl AsRef<std::path::Path>) -> DxfParseResult<Self> {
+    pub fn open(path: impl AsRef<std::path::Path>) -> ParseResult<Self> {
         let bytes = std::fs::read(path)?;
         Self::parse_bytes(&bytes)
     }
-    pub fn parse_bytes(bytes: &[u8]) -> DxfParseResult<Self> {
+    pub fn parse_bytes(bytes: &[u8]) -> ParseResult<Self> {
         let s = crate::parser::bytes_to_string(bytes)?;
         Self::parse_str(&s)
     }
-    pub fn parse_str(s: &str) -> DxfParseResult<Self> {
+    pub fn parse_str(s: &str) -> ParseResult<Self> {
         let atoms = crate::Atom::parse_str(s)?;
         Ok(Self::parse_atoms(&atoms))
     }

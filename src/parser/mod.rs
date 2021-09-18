@@ -1,4 +1,3 @@
-mod atom;
 mod block;
 mod drawing;
 mod entity;
