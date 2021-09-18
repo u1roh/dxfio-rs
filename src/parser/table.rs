@@ -26,9 +26,8 @@ impl FromNode for TableEntry {
             };
             source
                 .atoms
-                .iter()
-                .find(|a| a.code == code)
-                .and_then(|a| a.value.get())
+                .find(code)
+                .and_then(|value| value.as_handle())
                 .unwrap_or_default()
         };
         let name = source

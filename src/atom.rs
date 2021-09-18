@@ -32,9 +32,11 @@ impl<'a> Atom<'a> {
             90..=99 | 420..=429 | 440..=449 | 1071 => Value::I32(line2.parse()?),
             160..=169 => Value::I64(line2.parse()?),
             290..=299 => Value::Bool(line2 != "0"),
-            105 | 320..=329 | 390..=399 | 480..=481 => {
-                Value::Handle(u32::from_str_radix(line2, 16)?)
-            }
+            105 | 320..=329 | 390..=399 | 480..=481 => Value::Handle(if line2.is_empty() {
+                0
+            } else {
+                u32::from_str_radix(line2, 16)?
+            }),
             310..=319 => Value::Bytes(
                 (0..line2.len())
                     .step_by(2)

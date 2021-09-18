@@ -46,6 +46,21 @@ impl<'a> Value<'a> {
             false
         }
     }
+    pub fn as_handle(&self) -> Option<u32> {
+        match self {
+            Self::Handle(x) => Some(*x),
+            Self::String(s) => u32::from_str_radix(s, 16).ok(),
+            _ => None,
+        }
+    }
+    pub fn as_handle_to(&self, dst: &mut u32) -> bool {
+        if let Some(handle) = self.as_handle() {
+            *dst = handle;
+            true
+        } else {
+            false
+        }
+    }
     pub fn into_owned(self) -> Value<'static> {
         match self {
             Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
@@ -90,6 +105,7 @@ impl<'a> FromValue<'a> for f64 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::F64(x) => Some(*x),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }
@@ -98,6 +114,7 @@ impl<'a> FromValue<'a> for i64 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::I64(x) => Some(*x),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }
@@ -106,6 +123,7 @@ impl<'a> FromValue<'a> for i32 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::I32(x) => Some(*x),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }
@@ -114,6 +132,7 @@ impl<'a> FromValue<'a> for i16 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::I16(x) => Some(*x),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }
@@ -122,6 +141,7 @@ impl<'a> FromValue<'a> for u32 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::Handle(x) => Some(*x),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }
@@ -132,6 +152,7 @@ impl<'a> FromValue<'a> for usize {
             Value::I16(x) if *x >= 0 => Some(*x as _),
             Value::I32(x) if *x >= 0 => Some(*x as _),
             Value::I64(x) if *x >= 0 => Some(*x as _),
+            Value::String(s) => s.parse().ok(),
             _ => None,
         }
     }

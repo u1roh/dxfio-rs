@@ -174,7 +174,7 @@ impl<'a> crate::value::FromValue<'a> for TextLineSpacingStyle {
 impl SetAtom for EntityHeader {
     fn set_atom(&mut self, atom: &super::Atom) -> bool {
         match atom.code {
-            5 => atom.value.get_to(&mut self.handle),
+            5 => atom.value.as_handle_to(&mut self.handle),
             67 => atom.value.get_to(&mut self.space),
             8 => atom.value.get_to(&mut self.layer),
             6 => atom.value.get_to(&mut self.line_type),
