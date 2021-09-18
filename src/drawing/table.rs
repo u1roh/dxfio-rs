@@ -22,7 +22,7 @@ pub enum TableRecord {
     Ucs(Ucs),                // UCS
     View(View),              // VIEW
     Viewport(Viewport),      // VPORT
-    NotSupported(crate::DxfNode),
+    NotSupported(crate::Node<'static>),
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

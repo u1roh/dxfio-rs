@@ -28,6 +28,24 @@ impl<'a> Value<'a> {
             false
         }
     }
+    pub fn and_then_to<T: FromValue<'a>, U>(
+        &'a self,
+        dst: &mut U,
+        f: impl Fn(T) -> Option<U>,
+    ) -> bool {
+        if let Some(x) = self.get().and_then(f) {
+            *dst = x;
+            true
+        } else {
+            log::error!(
+                "Value::and_then_to::<{}>({:?}, dst: &mut {}) failed",
+                std::any::type_name::<T>(),
+                self,
+                std::any::type_name::<U>(),
+            );
+            false
+        }
+    }
     pub fn into_owned(self) -> Value<'static> {
         match self {
             Self::String(s) => Value::String(Cow::Owned(s.into_owned())),

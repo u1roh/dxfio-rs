@@ -1,12 +1,12 @@
 mod entity;
 mod table;
-use crate::{DxfNode, DxfParseResult};
+use crate::{DxfNode, DxfParseResult, Node};
 pub use entity::*;
 pub use table::*;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Drawing {
-    pub headers: Vec<DxfNode>, // 暫定措置
+    pub headers: Vec<Node<'static>>, // 暫定措置
     pub tables: Vec<TableNode>,
     pub blocks: Vec<BlockNode>,
     pub entities: Vec<EntityNode>,
@@ -21,13 +21,13 @@ impl Drawing {
         Self::parse_str(&s)
     }
     pub fn parse_str(s: &str) -> DxfParseResult<Self> {
-        let atoms = crate::parser::ParAtom::parse(s)?;
+        let atoms = crate::Atom::parse_str(s)?;
         Ok(Self::parse_atoms(&atoms))
     }
-    pub fn parse_atoms(atoms: &[crate::parser::ParAtom]) -> Self {
-        Self::parse_nodes(&crate::parser::ParNode::parse(atoms))
+    pub fn parse_atoms(atoms: &[crate::Atom]) -> Self {
+        Self::parse_nodes(&crate::Node::parse(atoms))
     }
-    pub fn parse_nodes(nodes: &[crate::parser::ParNode]) -> Self {
+    pub fn parse_nodes<'a>(nodes: &'a [crate::Node<'a>]) -> Self {
         crate::parser::ParDrawing::parse(nodes).into()
     }
 }

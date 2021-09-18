@@ -51,10 +51,10 @@ pub struct Atom<'a> {
     pub value: Value<'a>,
 }
 impl<'a> Atom<'a> {
-    fn into_owned(self) -> Atom<'static> {
+    fn to_owned(&self) -> Atom<'static> {
         Atom {
             code: self.code,
-            value: self.value.into_owned(),
+            value: self.value.clone().into_owned(),
         }
     }
 }
@@ -78,22 +78,16 @@ impl Node<'static> {
         let atoms = Atom::parse_str(s)?;
         Ok(Node::parse(&atoms)
             .into_iter()
-            .map(|node| node.into_owned())
+            .map(|node| node.to_owned())
             .collect())
     }
 }
 impl<'a> Node<'a> {
-    pub fn into_owned(self) -> Node<'static> {
+    pub fn to_owned(&self) -> Node<'static> {
         Node {
-            node_type: Cow::Owned(self.node_type.into_owned()),
-            atoms: Cow::Owned(
-                self.atoms
-                    .into_owned()
-                    .into_iter()
-                    .map(|a| a.into_owned())
-                    .collect(),
-            ),
-            nodes: self.nodes.into_iter().map(|n| n.into_owned()).collect(),
+            node_type: Cow::Owned(self.node_type.clone().into_owned()),
+            atoms: Cow::Owned(self.atoms.iter().map(|a| a.to_owned()).collect()),
+            nodes: self.nodes.iter().map(|n| n.to_owned()).collect(),
         }
     }
 }
