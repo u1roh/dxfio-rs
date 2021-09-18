@@ -33,9 +33,49 @@ impl<T: SetAtom> SetAtom for (EntityHeader, T) {
     }
 }
 
+impl FromNode2 for EntityNode {
+    fn from_node(source: &Node) -> Self {
+        match source.node_type.as_ref() {
+            "INSERT" => parse_by2(source, Entity::Insert),
+            "DIMENSION" => parse_by2(source, Entity::Dimension),
+            "LINE" => parse_by2(source, Entity::Line),
+            _ => parse_by2(source, |atoms| {
+                Entity::NotSupported((*source.node_type).to_owned(), atoms)
+            }),
+        }
+    }
+}
+fn parse_by2<T: SetAtom2>(source: &Node, f: impl Fn(T) -> Entity) -> EntityNode {
+    let (header, entity) = FromNode2::from_node(source);
+    EntityNode {
+        header,
+        entity: f(entity),
+    }
+}
+
+impl<T: SetAtom2> SetAtom2 for (EntityHeader, T) {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        if SetAtom2::set_atom(&mut self.0, atom) || self.1.set_atom(atom) {
+            true
+        } else {
+            unimplemented!();
+            // self.0.extras.push((*atom).into());
+            false
+        }
+    }
+}
+
 impl SetAtom for Vec<DxfAtom> {
     fn set_atom(&mut self, atom: &ParAtom) -> bool {
         self.push((*atom).into());
+        true
+    }
+}
+
+impl SetAtom2 for Vec<DxfAtom> {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        unimplemented!();
+        // self.push((*atom).into());
         true
     }
 }
