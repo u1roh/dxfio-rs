@@ -5,7 +5,7 @@ mod drawing;
 pub use drawing::*;
 
 mod value;
-pub use value::*;
+pub use value::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct DxfAtom {
@@ -75,7 +75,7 @@ impl Node<'static> {
         Self::parse_str(&s)
     }
     pub fn parse_str(s: &str) -> DxfParseResult<Vec<Self>> {
-        let atoms = Atom::parse(s)?;
+        let atoms = Atom::parse_str(s)?;
         Ok(Node::parse(&atoms)
             .into_iter()
             .map(|node| node.into_owned())

@@ -20,6 +20,11 @@ impl<'a> Value<'a> {
             *dst = x;
             true
         } else {
+            log::error!(
+                "Value::get_to({:?}, dst: &mut {}) failed",
+                self,
+                std::any::type_name::<T>(),
+            );
             false
         }
     }
@@ -41,10 +46,24 @@ pub trait FromValue<'a>: Sized {
     fn from_value(value: &'a Value<'a>) -> Option<Self>;
 }
 
+impl<'a, T: FromValue<'a>> FromValue<'a> for Option<T> {
+    fn from_value(value: &'a Value<'a>) -> Option<Self> {
+        Some(T::from_value(value))
+    }
+}
+
 impl<'a> FromValue<'a> for &'a str {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::String(s) => Some(s),
+            _ => None,
+        }
+    }
+}
+impl<'a> FromValue<'a> for String {
+    fn from_value(value: &'a Value<'a>) -> Option<Self> {
+        match value {
+            Value::String(s) => Some(s.as_ref().to_owned()),
             _ => None,
         }
     }
@@ -77,6 +96,24 @@ impl<'a> FromValue<'a> for i16 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
         match value {
             Value::I16(x) => Some(*x),
+            _ => None,
+        }
+    }
+}
+impl<'a> FromValue<'a> for u32 {
+    fn from_value(value: &'a Value<'a>) -> Option<Self> {
+        match value {
+            Value::Handle(x) => Some(*x),
+            _ => None,
+        }
+    }
+}
+impl<'a> FromValue<'a> for usize {
+    fn from_value(value: &'a Value<'a>) -> Option<Self> {
+        match value {
+            Value::I16(x) if *x >= 0 => Some(*x as _),
+            Value::I32(x) if *x >= 0 => Some(*x as _),
+            Value::I64(x) if *x >= 0 => Some(*x as _),
             _ => None,
         }
     }
