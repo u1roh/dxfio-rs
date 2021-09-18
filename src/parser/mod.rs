@@ -1,7 +1,6 @@
 mod block;
 mod drawing;
 mod entity;
-mod node;
 mod table;
 
 pub use drawing::*;

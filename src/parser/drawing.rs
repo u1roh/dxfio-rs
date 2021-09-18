@@ -17,12 +17,7 @@ impl<'a> ParDrawing<'a> {
             entities: Vec::new(),
         };
         for section in nodes {
-            match section
-                .atoms
-                .iter()
-                .find(|a| a.code == 2)
-                .and_then(|a| a.value.get())
-            {
+            match section.atoms.get_value(2) {
                 Some("HEADER") => {
                     drawing.headers = &section.nodes;
                 }

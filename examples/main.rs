@@ -5,7 +5,7 @@ fn main() {
     let bytes = std::fs::read(&args[1]).unwrap();
     let s = dxfio::parser::bytes_to_string(&bytes).unwrap();
     let atoms = dxfio::Atom::parse_str(&s).unwrap();
-    let nodes = dxfio::Node::parse(&atoms);
+    let nodes = dxfio::Node::parse_atoms(&atoms);
     let drawing = dxfio::parser::ParDrawing::parse(&nodes);
     println!("{:?}", drawing);
 }

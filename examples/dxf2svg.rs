@@ -1,4 +1,4 @@
-use dxfio::DxfAtomList;
+use dxfio::AtomList;
 use std::ops::Deref;
 
 fn main() {

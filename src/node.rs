@@ -1,11 +1,45 @@
-use crate::{Atom, Node};
+use crate::{Atom, ParseResult};
 use std::borrow::Cow;
 
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Node<'a> {
+    pub node_type: Cow<'a, str>,
+    pub atoms: Cow<'a, [Atom<'a>]>,
+    pub nodes: Vec<Self>,
+}
+
+impl Node<'static> {
+    pub fn open(path: impl AsRef<std::path::Path>) -> ParseResult<Vec<Self>> {
+        let bytes = std::fs::read(path)?;
+        Self::parse_bytes(&bytes)
+    }
+    pub fn parse_bytes(bytes: &[u8]) -> ParseResult<Vec<Self>> {
+        let s = crate::parser::bytes_to_string(bytes)?;
+        Self::parse_str(&s)
+    }
+    pub fn parse_str(s: &str) -> ParseResult<Vec<Self>> {
+        let atoms = Atom::parse_str(s)?;
+        Ok(Node::parse_atoms(&atoms)
+            .into_iter()
+            .map(|node| node.to_owned())
+            .collect())
+    }
+}
+
 impl<'a> Node<'a> {
-    pub fn parse(atoms: &'a [Atom<'a>]) -> Vec<Self> {
+    pub fn to_owned(&self) -> Node<'static> {
+        Node {
+            node_type: Cow::Owned(self.node_type.clone().into_owned()),
+            atoms: Cow::Owned(self.atoms.iter().map(|a| a.to_owned()).collect()),
+            nodes: self.nodes.iter().map(|n| n.to_owned()).collect(),
+        }
+    }
+    pub fn parse_atoms(atoms: &'a [Atom<'a>]) -> Vec<Self> {
         NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
 }
+
+// ---------------------------
 
 struct NodeParser<'a> {
     atoms: &'a [Atom<'a>],
