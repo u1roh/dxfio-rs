@@ -34,6 +34,33 @@ impl<T: SetAtom> SetAtom for (EntityHeader, T) {
     }
 }
 
+impl SetAtom for EntityHeader {
+    fn set_atom(&mut self, atom: &super::Atom) -> bool {
+        match atom.code {
+            5 => atom.value.as_handle_to(&mut self.handle),
+            67 => atom.value.get_to(&mut self.space),
+            8 => atom.value.get_to(&mut self.layer),
+            6 => atom.value.get_to(&mut self.line_type),
+            62 => atom.value.get_to(&mut self.color_number),
+            370 => atom.value.get_to(&mut self.line_weight),
+            48 => atom.value.get_to(&mut self.line_type_scale),
+            60 => {
+                self.is_visible = match atom.value.get::<i16>() {
+                    Some(0) => true,
+                    Some(1) => false,
+                    _ => return false,
+                };
+                true
+            }
+            420 => atom.value.get_to(&mut self.color_rgb),
+            430 => atom.value.get_to(&mut self.color_name),
+            440 => atom.value.get_to(&mut self.transparency),
+            284 => atom.value.get_to(&mut self.shadow_mode),
+            _ => false,
+        }
+    }
+}
+
 impl<'a> SetAtom for Vec<Atom<'static>> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         self.push(atom.to_owned());
@@ -237,33 +264,6 @@ impl SetAtom for Box<Dimension> {
                 log::warn!("unhandled atom: {:?}", atom);
                 false
             }
-        }
-    }
-}
-
-impl SetAtom for EntityHeader {
-    fn set_atom(&mut self, atom: &super::Atom) -> bool {
-        match atom.code {
-            5 => atom.value.as_handle_to(&mut self.handle),
-            67 => atom.value.get_to(&mut self.space),
-            8 => atom.value.get_to(&mut self.layer),
-            6 => atom.value.get_to(&mut self.line_type),
-            62 => atom.value.get_to(&mut self.color_number),
-            370 => atom.value.get_to(&mut self.line_weight),
-            48 => atom.value.get_to(&mut self.line_type_scale),
-            60 => {
-                self.is_visible = match atom.value.get::<i16>() {
-                    Some(0) => true,
-                    Some(1) => false,
-                    _ => return false,
-                };
-                true
-            }
-            420 => atom.value.get_to(&mut self.color_rgb),
-            430 => atom.value.get_to(&mut self.color_name),
-            440 => atom.value.get_to(&mut self.transparency),
-            284 => atom.value.get_to(&mut self.shadow_mode),
-            _ => false,
         }
     }
 }
