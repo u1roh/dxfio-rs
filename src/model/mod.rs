@@ -1,6 +1,8 @@
+mod data;
 mod entity;
 mod table;
 use crate::{Node, ParseResult};
+pub use data::*;
 pub use entity::*;
 pub use table::*;
 
