@@ -141,7 +141,7 @@ impl FromNode for Layer {
                 }
                 6 => dst.line_type = atom.value.get(),
                 290 => dst.is_plotted = atom.value.get::<i16>().unwrap_or_default() != 0,
-                370 => dst.line_weight = atom.value.get::<i16>().map(|x| x as u16),
+                370 => dst.line_weight = atom.value.get::<i16>(),
                 390 => dst.plot_style_handle = atom.value.get(),
                 347 => dst.material_handle = atom.value.get(),
                 _ => {}

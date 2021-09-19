@@ -8,6 +8,7 @@ impl FromNode for EntityNode {
             "DIMENSION" => parse_by(source, Entity::Dimension),
             "LINE" => parse_by(source, Entity::Line),
             "TEXT" => parse_by(source, Entity::Text),
+            "MTEXT" => parse_by(source, Entity::MText),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -151,6 +152,77 @@ impl SetAtom for Text {
             230 => atom
                 .value
                 .get_optional_coord_to(2, &mut self.extrusion_vector),
+            _ => false,
+        }
+    }
+}
+
+impl SetAtom for MText {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        match atom.code {
+            1 | 3 => {
+                self.text += atom.value.get().unwrap_or_default();
+                true
+            }
+            7 => atom.value.get_to(&mut self.style_name),
+            10 => atom.value.get_to(&mut self.point[0]),
+            20 => atom.value.get_to(&mut self.point[1]),
+            30 => atom.value.get_to(&mut self.point[2]),
+            11 => atom.value.get_to(&mut self.x_axis[0]),
+            21 => atom.value.get_to(&mut self.x_axis[1]),
+            31 => atom.value.get_to(&mut self.x_axis[2]),
+            40 => atom.value.get_to(&mut self.height),
+            41 => atom.value.get_to(&mut self.rectangle_width),
+            42 => atom.value.get_to(&mut self.character_width),
+            43 => atom.value.get_to(&mut self.character_height),
+            50 => atom.value.get_to(&mut self.rotation_radian),
+            210 => atom
+                .value
+                .get_optional_coord_to(0, &mut self.extrusion_vector),
+            220 => atom
+                .value
+                .get_optional_coord_to(1, &mut self.extrusion_vector),
+            230 => atom
+                .value
+                .get_optional_coord_to(2, &mut self.extrusion_vector),
+            71 => atom.value.get_to(&mut self.attachment_point),
+            72 => {
+                if let Some(dir) = atom.value.get::<i16>().and_then(|value| {
+                    Some(match value {
+                        1 => MTextDirection::LeftToRight,
+                        3 => MTextDirection::TopToBottom,
+                        5 => MTextDirection::ByStyle,
+                        _ => return None,
+                    })
+                }) {
+                    self.drawing_direction = dir;
+                    true
+                } else {
+                    false
+                }
+            }
+            73 => atom.value.get_to(&mut self.line_spacing_style),
+            44 => atom.value.get_to(&mut self.line_spacing_factor),
+            90 => {
+                self.background_fill_color =
+                    match (self.background_fill_color, atom.value.get::<i32>()) {
+                        (Some(MTextBackground::ColorNumber(_)), Some(1)) => return true,
+                        (_, Some(0)) => None,
+                        (_, Some(1)) => Some(MTextBackground::ColorNumber(0)),
+                        (_, Some(2)) => Some(MTextBackground::WindowColor),
+                        _ => return false,
+                    };
+                true
+            }
+            63 => {
+                if let Some(color) = atom.value.get::<i16>() {
+                    self.background_fill_color = Some(MTextBackground::ColorNumber(color));
+                    true
+                } else {
+                    false
+                }
+            }
+            45 => atom.value.get_to(&mut self.fill_box_scale),
             _ => false,
         }
     }

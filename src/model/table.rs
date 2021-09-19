@@ -110,7 +110,7 @@ pub struct Layer {
     pub flags: u16,
     pub color_number: Option<u8>, // None means turned-off
     pub line_type: Option<String>,
-    pub line_weight: Option<u16>,
+    pub line_weight: Option<i16>,
     pub plot_style_handle: Option<u32>,
     pub material_handle: Option<u32>,
 }
