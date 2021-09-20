@@ -1,3 +1,58 @@
+use crate::{MTextCommand, MTextNode};
+
+impl crate::MTextFormatString {
+    pub fn parse_and_build_nodes(&mut self) {
+        self.raw = parse_control_codes(&self.raw);
+        self.nodes = parse_and_build_nodes(&self.raw);
+    }
+}
+
+fn parse_and_build_nodes(src: &str) -> Vec<MTextNode> {
+    // src.find(&['{'])
+    let mut dst = vec![];
+    for (i, ch) in src.chars().enumerate() {
+        // match dst.last_mut() {
+        //     Some(crate::MTextNode::Text(range)) => match ch {
+        //         '\\' => {
+        //             range.end = i;
+        //         }
+        //         _ => {}
+        //     },
+        //     _ => {}
+        // }
+    }
+    dst
+}
+
+fn parse_commands(src: &str, mut range: std::ops::Range<usize>) -> Vec<crate::MTextNode> {
+    let mut dst = vec![];
+    while let Some(len) = src[range.clone()].find("\\") {
+        if len > 0 {
+            dst.push(MTextNode::Text(range.start..range.start + len));
+        }
+        range.start += 2;
+        match src.get(range.start - 1..range.start) {
+            Some("O") => {
+                dst.push(MTextNode::Command(MTextCommand::OStart));
+            }
+            Some("o") => {
+                dst.push(MTextNode::Command(MTextCommand::OEnd));
+            }
+            Some("C") => {
+                if let Some(k) = src[range.clone()].find(";") {
+                    dst.push(MTextNode::Command(MTextCommand::C(
+                        src[range.start..range.start + k].parse().unwrap(),
+                    )));
+                }
+            }
+            _ => {
+                unimplemented!();
+            }
+        }
+    }
+    dst
+}
+
 // https://knowledge.autodesk.com/ja/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2020/JPN/AutoCAD-LT/files/GUID-968CBC1D-BA99-4519-ABDD-88419EB2BF92-htm.html
 pub(super) fn parse_control_codes(mut src: &str) -> String {
     let mut dst = String::default();

@@ -9,7 +9,7 @@ impl FromNode for EntityNode {
             "LINE" => parse_by(source, Entity::Line),
             "TEXT" => parse_by(source, Entity::Text),
             "MTEXT" => parse_by(source, |mut mtext: MText| {
-                mtext.text = super::text_format::parse_control_codes(&mtext.text);
+                mtext.text.parse_and_build_nodes();
                 Entity::MText(mtext)
             }),
             _ => parse_by(source, |atoms| {
@@ -182,7 +182,7 @@ impl SetAtom for MText {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
             1 | 3 => {
-                self.text += atom.value.get().unwrap_or_default();
+                self.text.raw += atom.value.get().unwrap_or_default();
                 true
             }
             7 => atom.value.get_to(&mut self.style_name),

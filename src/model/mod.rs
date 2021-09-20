@@ -6,6 +6,7 @@ use crate::{Node, ParseResult};
 pub use data::*;
 pub use entity::*;
 pub use table::*;
+pub use text_format::*;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Document {

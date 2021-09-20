@@ -86,7 +86,7 @@ pub struct Text {
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct MText {
-    pub text: String,                                   // 1, 3
+    pub text: super::MTextFormatString,                 // 1, 3
     pub style_name: Option<String>,                     // 7 (default = STANDARD)
     pub point: [f64; 3],                                // 10, 20, 30
     pub x_axis: [f64; 3],                               // 11, 21, 31

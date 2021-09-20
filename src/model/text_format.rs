@@ -1,8 +1,15 @@
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct MTextFormatString {
+    pub raw: String,
+    pub nodes: Vec<MTextNode>,
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum MTextNode {
     Text(std::ops::Range<usize>),
     Command(MTextCommand),
-    Stacked(Box<Self>, Box<Self>, MTextStackType),
+    Block(Vec<Self>),
+    Stacked(Vec<Self>, Vec<Self>, MTextStackType),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -14,9 +21,12 @@ pub enum MTextStackType {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum MTextCommand {
-    O,
-    L,
-    K,
+    OStart,
+    OEnd,
+    LStart,
+    LEnd,
+    KStart,
+    KEnd,
     C(i16),
     F(String),
     H(i16),
@@ -25,6 +35,7 @@ pub enum MTextCommand {
     Q(f64),
     W(f64),
     A(MTextAlignment),
+    P,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
