@@ -8,7 +8,10 @@ impl FromNode for EntityNode {
             "DIMENSION" => parse_by(source, Entity::Dimension),
             "LINE" => parse_by(source, Entity::Line),
             "TEXT" => parse_by(source, Entity::Text),
-            "MTEXT" => parse_by(source, Entity::MText),
+            "MTEXT" => parse_by(source, |mut mtext: MText| {
+                mtext.text = super::text_format::parse_control_codes(&mtext.text);
+                Entity::MText(mtext)
+            }),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -108,7 +111,14 @@ impl SetAtom for Line {
 impl SetAtom for Text {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
-            1 => atom.value.get_to(&mut self.text),
+            1 => {
+                if let Some(text) = atom.value.get::<&str>() {
+                    self.text = super::text_format::parse_control_codes(text);
+                    true
+                } else {
+                    false
+                }
+            }
             7 => atom.value.get_to(&mut self.style_name),
             10 => atom.value.get_to(&mut self.point1[0]),
             20 => atom.value.get_to(&mut self.point1[1]),

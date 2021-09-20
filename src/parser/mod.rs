@@ -2,6 +2,7 @@ mod block;
 mod data;
 mod entity;
 mod table;
+mod text_format;
 
 use crate::{Atom, AtomList, Document, Node};
 use std::borrow::Cow;
