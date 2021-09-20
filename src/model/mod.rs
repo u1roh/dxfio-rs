@@ -1,7 +1,7 @@
 mod data;
 mod entity;
-mod mtext_format;
 mod table;
+mod text_format;
 use crate::{Node, ParseResult};
 pub use data::*;
 pub use entity::*;
