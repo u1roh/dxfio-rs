@@ -1,4 +1,4 @@
-use crate::{MTextCommand, MTextNode};
+use crate::{MTextAlignment, MTextCommand, MTextNode};
 
 impl crate::MTextFormatString {
     pub fn parse_and_build_nodes(&mut self) {
@@ -24,33 +24,82 @@ fn parse_and_build_nodes(src: &str) -> Vec<MTextNode> {
     dst
 }
 
-fn parse_commands(src: &str, mut range: std::ops::Range<usize>) -> Vec<crate::MTextNode> {
+fn parse_texts_and_commands(src: &str, mut range: std::ops::Range<usize>) -> Vec<crate::MTextNode> {
     let mut dst = vec![];
-    while let Some(len) = src[range.clone()].find("\\") {
+    while let Some(len) = src[range.clone()].find('\\') {
         if len > 0 {
             dst.push(MTextNode::Text(range.start..range.start + len));
+            range.start += len;
         }
-        range.start += 2;
-        match src.get(range.start - 1..range.start) {
-            Some("O") => {
-                dst.push(MTextNode::Command(MTextCommand::OStart));
-            }
-            Some("o") => {
-                dst.push(MTextNode::Command(MTextCommand::OEnd));
-            }
-            Some("C") => {
-                if let Some(k) = src[range.clone()].find(";") {
-                    dst.push(MTextNode::Command(MTextCommand::C(
-                        src[range.start..range.start + k].parse().unwrap(),
-                    )));
-                }
-            }
-            _ => {
-                unimplemented!();
-            }
+        if let Some(cmd) = parse_command(src, &mut range) {
+            dst.push(MTextNode::Command(cmd));
         }
     }
+    dst.push(MTextNode::Text(range.clone()));
     dst
+}
+
+fn parse_command(src: &str, range: &mut std::ops::Range<usize>) -> Option<MTextCommand> {
+    assert_eq!(src.chars().next(), Some('\\'));
+    use MTextCommand::*;
+    range.start += 2;
+    src.get(range.start - 1..range.start)
+        .and_then(|ch| match ch {
+            "O" => Some(OStart),
+            "o" => Some(OEnd),
+            "L" => Some(LStart),
+            "l" => Some(LEnd),
+            "K" => Some(KStart),
+            "k" => Some(KEnd),
+            "P" => Some(P),
+            "C" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                src[range.start - k..range.start].parse().ok().map(C)
+            }),
+            "F" => src[range.clone()].find(';').map(|k| {
+                range.start += k;
+                F(src[range.start - k..range.start].to_owned())
+            }),
+            "H" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                let s = &src[range.start - k..range.start];
+                if s.ends_with('x') {
+                    src[range.start - k..range.start - 1].parse().ok().map(Hx)
+                } else {
+                    src[range.start - k..range.start].parse().ok().map(H)
+                }
+            }),
+            "T" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                src[range.start - k..range.start].parse().ok().map(T)
+            }),
+            "Q" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                src[range.start - k..range.start].parse().ok().map(Q)
+            }),
+            "W" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                src[range.start - k..range.start].parse().ok().map(W)
+            }),
+            "A" => src[range.clone()].find(';').and_then(|k| {
+                range.start += k;
+                src[range.start - k..range.start]
+                    .parse()
+                    .ok()
+                    .and_then(|n| {
+                        Some(A(match n {
+                            0 => MTextAlignment::Bottom,
+                            1 => MTextAlignment::Center,
+                            2 => MTextAlignment::Top,
+                            _ => return None,
+                        }))
+                    })
+            }),
+            code => {
+                log::error!("unknown format code: '{}'", code);
+                None
+            }
+        })
 }
 
 // https://knowledge.autodesk.com/ja/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2020/JPN/AutoCAD-LT/files/GUID-968CBC1D-BA99-4519-ABDD-88419EB2BF92-htm.html
