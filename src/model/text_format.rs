@@ -29,7 +29,7 @@ pub enum MTextCommand {
     KEnd,
     C(i16),
     F(String),
-    H(i16),
+    H(f64),
     Hx(f64),
     T(f64),
     Q(f64),

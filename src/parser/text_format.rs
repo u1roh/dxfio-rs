@@ -53,7 +53,7 @@ fn chars_to_nodes(
                     _ => unreachable!(),
                 };
                 on_event(Event::Node(MTextNode::Stacked(nodes1, nodes2, stack_type)));
-            } else if let Some(cmd) = parse_command2(chars) {
+            } else if let Some(cmd) = parse_command(ch, chars) {
                 on_event(Event::Node(MTextNode::Command(cmd)));
             }
         } else if ends.contains(&ch) {
@@ -84,6 +84,13 @@ fn test_parse_to_nodes() {
         &[MTextNode::Text("a{b}c".to_owned())]
     );
     assert_eq!(
+        parse_to_nodes("\\W12.34;abc"),
+        &[
+            MTextNode::Command(MTextCommand::W(12.34)),
+            MTextNode::Text("abc".to_owned())
+        ]
+    );
+    assert_eq!(
         parse_to_nodes("a{b}c"),
         &[
             MTextNode::Text("a".to_owned()),
@@ -91,14 +98,21 @@ fn test_parse_to_nodes() {
             MTextNode::Text("c".to_owned())
         ]
     );
+    assert_eq!(
+        parse_to_nodes("{\\H1.8;abc}"),
+        &[MTextNode::Block(vec![
+            MTextNode::Command(MTextCommand::H(1.8)),
+            MTextNode::Text("abc".to_owned())
+        ]),]
+    );
 }
 
-fn parse_command2(chars: &mut impl Iterator<Item = char>) -> Option<MTextCommand> {
+fn parse_command(ch: char, chars: &mut impl Iterator<Item = char>) -> Option<MTextCommand> {
     use MTextCommand::*;
     fn read_to_semicolon(chars: &mut impl Iterator<Item = char>) -> String {
-        chars.take_while(|&c| c != ';').collect::<String>()
+        chars.take_while(|&c| c != ';').collect()
     }
-    chars.next().and_then(|ch| match ch {
+    match ch {
         'O' => Some(OStart),
         'o' => Some(OEnd),
         'L' => Some(LStart),
@@ -131,7 +145,7 @@ fn parse_command2(chars: &mut impl Iterator<Item = char>) -> Option<MTextCommand
             log::error!("unknown format code: '{}'", code);
             None
         }
-    })
+    }
 }
 
 // https://knowledge.autodesk.com/ja/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2020/JPN/AutoCAD-LT/files/GUID-968CBC1D-BA99-4519-ABDD-88419EB2BF92-htm.html
@@ -141,7 +155,6 @@ pub(super) fn parse_control_codes(mut src: &str) -> String {
     let mut underlined = false;
     let mut struck = false;
     while let Some(k) = src.find("%%") {
-        eprintln!("k = {}", k);
         dst += &src[..k];
         src = &src[k + 2..];
         // 仕様が理解できず。"%% nnn" と書かれているが、3桁固定…？ Unicodeは十進数3桁では収まらないが…。
