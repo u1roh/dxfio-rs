@@ -3,103 +3,135 @@ use crate::{MTextAlignment, MTextCommand, MTextNode};
 impl crate::MTextFormatString {
     pub fn parse_and_build_nodes(&mut self) {
         self.raw = parse_control_codes(&self.raw);
-        self.nodes = parse_and_build_nodes(&self.raw);
+        self.nodes = parse_to_nodes(&self.raw);
     }
 }
 
-fn parse_and_build_nodes(src: &str) -> Vec<MTextNode> {
-    // src.find(&['{'])
+fn parse_to_nodes(s: &str) -> Vec<MTextNode> {
+    chars_to_nodes(&mut s.chars(), &[]).0
+}
+
+fn chars_to_nodes(
+    chars: &mut impl Iterator<Item = char>,
+    ends: &[char],
+) -> (Vec<MTextNode>, Option<char>) {
+    enum Event {
+        Exit,
+        Node(MTextNode),
+        Char(char),
+    }
     let mut dst = vec![];
-    for (i, ch) in src.chars().enumerate() {
-        // match dst.last_mut() {
-        //     Some(crate::MTextNode::Text(range)) => match ch {
-        //         '\\' => {
-        //             range.end = i;
-        //         }
-        //         _ => {}
-        //     },
-        //     _ => {}
-        // }
-    }
-    dst
-}
-
-fn parse_texts_and_commands(src: &str, mut range: std::ops::Range<usize>) -> Vec<crate::MTextNode> {
-    let mut dst = vec![];
-    while let Some(len) = src[range.clone()].find('\\') {
-        if len > 0 {
-            dst.push(MTextNode::Text(range.start..range.start + len));
-            range.start += len;
-        }
-        if let Some(cmd) = parse_command(src, &mut range) {
-            dst.push(MTextNode::Command(cmd));
-        }
-    }
-    dst.push(MTextNode::Text(range.clone()));
-    dst
-}
-
-fn parse_command(src: &str, range: &mut std::ops::Range<usize>) -> Option<MTextCommand> {
-    assert_eq!(src.chars().next(), Some('\\'));
-    use MTextCommand::*;
-    range.start += 2;
-    src.get(range.start - 1..range.start)
-        .and_then(|ch| match ch {
-            "O" => Some(OStart),
-            "o" => Some(OEnd),
-            "L" => Some(LStart),
-            "l" => Some(LEnd),
-            "K" => Some(KStart),
-            "k" => Some(KEnd),
-            "P" => Some(P),
-            "C" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                src[range.start - k..range.start].parse().ok().map(C)
-            }),
-            "F" => src[range.clone()].find(';').map(|k| {
-                range.start += k;
-                F(src[range.start - k..range.start].to_owned())
-            }),
-            "H" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                let s = &src[range.start - k..range.start];
-                if s.ends_with('x') {
-                    src[range.start - k..range.start - 1].parse().ok().map(Hx)
-                } else {
-                    src[range.start - k..range.start].parse().ok().map(H)
-                }
-            }),
-            "T" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                src[range.start - k..range.start].parse().ok().map(T)
-            }),
-            "Q" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                src[range.start - k..range.start].parse().ok().map(Q)
-            }),
-            "W" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                src[range.start - k..range.start].parse().ok().map(W)
-            }),
-            "A" => src[range.clone()].find(';').and_then(|k| {
-                range.start += k;
-                src[range.start - k..range.start]
-                    .parse()
-                    .ok()
-                    .and_then(|n| {
-                        Some(A(match n {
-                            0 => MTextAlignment::Bottom,
-                            1 => MTextAlignment::Center,
-                            2 => MTextAlignment::Top,
-                            _ => return None,
-                        }))
-                    })
-            }),
-            code => {
-                log::error!("unknown format code: '{}'", code);
-                None
+    let mut backslash = false;
+    let mut text = String::default();
+    let mut on_event = |event| match event {
+        Event::Char(ch) => text.push(ch),
+        Event::Node(node) => {
+            if !text.is_empty() {
+                dst.push(MTextNode::Text(std::mem::take(&mut text)));
             }
-        })
+            dst.push(node);
+        }
+        Event::Exit => {
+            if !text.is_empty() {
+                dst.push(MTextNode::Text(std::mem::take(&mut text)));
+            }
+        }
+    };
+    while let Some(ch) = chars.next() {
+        if backslash {
+            backslash = false;
+            if ['\\', '{', '}'].contains(&ch) {
+                on_event(Event::Char(ch));
+            } else if ch == 'S' {
+                let (nodes1, sep) = chars_to_nodes(chars, &['^', '#', '/']);
+                let (nodes2, _) = chars_to_nodes(chars, &[';']);
+                let stack_type = match sep {
+                    Some('/') => crate::MTextStackType::Slash,
+                    Some('#') => crate::MTextStackType::Number,
+                    Some('^') => crate::MTextStackType::Hat,
+                    None => crate::MTextStackType::Hat,
+                    _ => unreachable!(),
+                };
+                on_event(Event::Node(MTextNode::Stacked(nodes1, nodes2, stack_type)));
+            } else if let Some(cmd) = parse_command2(chars) {
+                on_event(Event::Node(MTextNode::Command(cmd)));
+            }
+        } else if ends.contains(&ch) {
+            on_event(Event::Exit);
+            return (dst, Some(ch));
+        } else if ch == '\\' {
+            backslash = true;
+        } else if ch == '{' {
+            let (nodes, _) = chars_to_nodes(chars, &['}']);
+            on_event(Event::Node(MTextNode::Block(nodes)));
+        } else {
+            on_event(Event::Char(ch));
+        }
+    }
+    on_event(Event::Exit);
+    (dst, None)
+}
+
+#[test]
+fn test_parse_to_nodes() {
+    assert_eq!(parse_to_nodes("abc"), &[MTextNode::Text("abc".to_owned())]);
+    assert_eq!(
+        parse_to_nodes("a\\\\bc"),
+        &[MTextNode::Text("a\\bc".to_owned())]
+    );
+    assert_eq!(
+        parse_to_nodes("a\\{b\\}c"),
+        &[MTextNode::Text("a{b}c".to_owned())]
+    );
+    assert_eq!(
+        parse_to_nodes("a{b}c"),
+        &[
+            MTextNode::Text("a".to_owned()),
+            MTextNode::Block(vec![MTextNode::Text("b".to_owned())]),
+            MTextNode::Text("c".to_owned())
+        ]
+    );
+}
+
+fn parse_command2(chars: &mut impl Iterator<Item = char>) -> Option<MTextCommand> {
+    use MTextCommand::*;
+    fn read_to_semicolon(chars: &mut impl Iterator<Item = char>) -> String {
+        chars.take_while(|&c| c != ';').collect::<String>()
+    }
+    chars.next().and_then(|ch| match ch {
+        'O' => Some(OStart),
+        'o' => Some(OEnd),
+        'L' => Some(LStart),
+        'l' => Some(LEnd),
+        'K' => Some(KStart),
+        'k' => Some(KEnd),
+        'P' => Some(P),
+        'H' => {
+            let s = read_to_semicolon(chars);
+            if s.ends_with('x') {
+                s[..s.len() - 1].parse().ok().map(Hx)
+            } else {
+                s.parse().ok().map(H)
+            }
+        }
+        'C' => read_to_semicolon(chars).parse().ok().map(C),
+        'T' => read_to_semicolon(chars).parse().ok().map(T),
+        'Q' => read_to_semicolon(chars).parse().ok().map(Q),
+        'W' => read_to_semicolon(chars).parse().ok().map(W),
+        'F' => Some(F(read_to_semicolon(chars))),
+        'A' => read_to_semicolon(chars).parse().ok().and_then(|n| {
+            Some(A(match n {
+                0 => MTextAlignment::Bottom,
+                1 => MTextAlignment::Center,
+                2 => MTextAlignment::Top,
+                _ => return None,
+            }))
+        }),
+        code => {
+            log::error!("unknown format code: '{}'", code);
+            None
+        }
+    })
 }
 
 // https://knowledge.autodesk.com/ja/support/autocad-lt/learn-explore/caas/CloudHelp/cloudhelp/2020/JPN/AutoCAD-LT/files/GUID-968CBC1D-BA99-4519-ABDD-88419EB2BF92-htm.html

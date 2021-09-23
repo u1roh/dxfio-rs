@@ -6,7 +6,7 @@ pub struct MTextFormatString {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum MTextNode {
-    Text(std::ops::Range<usize>),
+    Text(String),
     Command(MTextCommand),
     Block(Vec<Self>),
     Stacked(Vec<Self>, Vec<Self>, MTextStackType),
