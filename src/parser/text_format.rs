@@ -132,7 +132,7 @@ fn parse_command(ch: char, chars: &mut impl Iterator<Item = char>) -> Option<MTe
         'T' => read_to_semicolon(chars).parse().ok().map(T),
         'Q' => read_to_semicolon(chars).parse().ok().map(Q),
         'W' => read_to_semicolon(chars).parse().ok().map(W),
-        'F' => Some(F(read_to_semicolon(chars))),
+        'F' | 'f' => Some(F(read_to_semicolon(chars))),
         'A' => read_to_semicolon(chars).parse().ok().and_then(|n| {
             Some(A(match n {
                 0 => MTextAlignment::Bottom,
