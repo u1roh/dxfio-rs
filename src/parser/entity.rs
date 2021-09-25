@@ -276,6 +276,8 @@ impl SetAtom for Box<Dimension> {
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
 
+            3 => value.get_to(&mut self.dimension_style),
+
             13 => value.get_optional_coord_to(0, &mut self.definition_point2),
             23 => value.get_optional_coord_to(1, &mut self.definition_point2),
             33 => value.get_optional_coord_to(2, &mut self.definition_point2),

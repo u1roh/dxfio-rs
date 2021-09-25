@@ -134,6 +134,7 @@ pub struct Dimension {
     pub text_rotation_angle: Option<f64>,              // 53
     pub horizontal_direction_angle: Option<f64>,       // 51
     pub extrusion_direction: Option<[f64; 3]>,         // 210, 220, 230
+    pub dimension_style: String,                       // 3
     pub definition_point2: Option<[f64; 3]>,           // 13, 23, 33 (WCS)
     pub definition_point3: Option<[f64; 3]>,           // 14, 24, 34 (WCS)
     pub definition_point4: Option<[f64; 3]>,           // 15, 25, 35 (WCS)

@@ -51,18 +51,18 @@ fn main() {
 fn draw_entity(
     mut svg: svg::Document,
     entity: &dxfio::EntityNode,
-    drawing: &dxfio::Document,
+    doc: &dxfio::Document,
     transform: &dyn Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
     match &entity.entity {
         dxfio::Entity::Insert(insert) => {
-            svg = draw_insert(svg, insert, drawing, transform);
+            svg = draw_insert(svg, insert, doc, transform);
         }
         dxfio::Entity::Line(line) => {
             svg = draw_line(svg, line, transform);
         }
         dxfio::Entity::Dimension(dim) => {
-            svg = draw_dimension(svg, dim, transform);
+            svg = draw_dimension(svg, dim, doc, transform);
         }
         dxfio::Entity::Text(_) => {
             log::warn!("TEXT entity ignored.");
@@ -80,10 +80,10 @@ fn draw_entity(
 fn draw_insert(
     mut svg: svg::Document,
     insert: &dxfio::Insert,
-    drawing: &dxfio::Document,
+    doc: &dxfio::Document,
     transform: &dyn Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
-    if let Some(block) = drawing
+    if let Some(block) = doc
         .blocks
         .iter()
         .find(|block| block.block_name == insert.block_name)
@@ -107,7 +107,7 @@ fn draw_insert(
             transform(&p)
         };
         for entity in &block.entities {
-            svg = draw_entity(svg, entity, drawing, &transform);
+            svg = draw_entity(svg, entity, doc, &transform);
         }
     } else {
         println!("block not found: name = {}", insert.block_name);
@@ -141,35 +141,47 @@ fn line_strip(svg: svg::Document, pol: &[[f64; 3]], color: Option<&'static str>)
 }
 
 fn draw_dimension(
-    svg: svg::Document,
+    mut svg: svg::Document,
     dim: &dxfio::Dimension,
+    doc: &dxfio::Document,
     transform: impl Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
-    let p1 = &dim.definition_point;
-    let p2 = dim.definition_point2.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
-    let p3 = dim.definition_point3.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
-    let p4 = {
-        let theta = dim.rotation_angle.unwrap_or(0.0) * std::f64::consts::PI / 180.0;
-        let line1 = geom2d::Line {
-            p: p1.into(),
-            v: geom2d::UnitVec::of_angle(theta),
+    if let Some(block) = doc
+        .blocks
+        .iter()
+        .find(|block| block.block_name == dim.block_name)
+    {
+        for entity in &block.entities {
+            svg = draw_entity(svg, entity, doc, &transform);
+        }
+        svg
+    } else {
+        let p1 = &dim.definition_point;
+        let p2 = dim.definition_point2.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
+        let p3 = dim.definition_point3.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
+        let p4 = {
+            let theta = dim.rotation_angle.unwrap_or(0.0) * std::f64::consts::PI / 180.0;
+            let line1 = geom2d::Line {
+                p: p1.into(),
+                v: geom2d::UnitVec::of_angle(theta),
+            };
+            let line2 = geom2d::Line {
+                p: p2.into(),
+                v: (geom2d::Pos::from(p1) - geom2d::Pos::from(p3))
+                    .normalize()
+                    .unwrap(),
+            };
+            line1.intersection_pos(&line2).unwrap()
         };
-        let line2 = geom2d::Line {
-            p: p2.into(),
-            v: (geom2d::Pos::from(p1) - geom2d::Pos::from(p3))
-                .normalize()
-                .unwrap(),
-        };
-        line1.intersection_pos(&line2).unwrap()
-    };
-    line_strip(
-        svg,
-        &[
-            transform(p2),
-            transform(&p4.into()),
-            transform(p1),
-            transform(p3),
-        ],
-        Some("blue"),
-    )
+        line_strip(
+            svg,
+            &[
+                transform(p2),
+                transform(&p4.into()),
+                transform(p1),
+                transform(p3),
+            ],
+            Some("blue"),
+        )
+    }
 }
