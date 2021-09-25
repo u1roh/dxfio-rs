@@ -1,3 +1,4 @@
+mod geom2d;
 use dxfio::AtomList;
 use std::ops::Deref;
 
@@ -60,8 +61,18 @@ fn draw_entity(
         dxfio::Entity::Line(line) => {
             svg = draw_line(svg, line, transform);
         }
-        dxfio::Entity::NotSupported(_, _) => {}
-        _ => unimplemented!(),
+        dxfio::Entity::Dimension(dim) => {
+            svg = draw_dimension(svg, dim, transform);
+        }
+        dxfio::Entity::Text(_) => {
+            log::warn!("TEXT entity ignored.");
+        }
+        dxfio::Entity::MText(_) => {
+            log::warn!("MTEXT entity ignored.");
+        }
+        dxfio::Entity::NotSupported(entity_type, _) => {
+            log::warn!("not supported entity type: {}", entity_type);
+        }
     }
     svg
 }
@@ -127,4 +138,38 @@ fn line_strip(svg: svg::Document, pol: &[[f64; 3]], color: Option<&'static str>)
     } else {
         svg
     }
+}
+
+fn draw_dimension(
+    svg: svg::Document,
+    dim: &dxfio::Dimension,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    let p1 = &dim.definition_point;
+    let p2 = dim.definition_point2.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
+    let p3 = dim.definition_point3.as_ref().unwrap_or(&[0.0, 0.0, 0.0]);
+    let p4 = {
+        let theta = dim.rotation_angle.unwrap_or(0.0) * std::f64::consts::PI / 180.0;
+        let line1 = geom2d::Line {
+            p: p1.into(),
+            v: geom2d::UnitVec::of_angle(theta),
+        };
+        let line2 = geom2d::Line {
+            p: p2.into(),
+            v: (geom2d::Pos::from(p1) - geom2d::Pos::from(p3))
+                .normalize()
+                .unwrap(),
+        };
+        line1.intersection_pos(&line2).unwrap()
+    };
+    line_strip(
+        svg,
+        &[
+            transform(p2),
+            transform(&p4.into()),
+            transform(p1),
+            transform(p3),
+        ],
+        Some("blue"),
+    )
 }
