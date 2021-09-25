@@ -64,11 +64,11 @@ fn draw_entity(
         dxfio::Entity::Dimension(dim) => {
             svg = draw_dimension(svg, dim, doc, transform);
         }
-        dxfio::Entity::Text(_) => {
-            log::warn!("TEXT entity ignored.");
+        dxfio::Entity::Text(text) => {
+            svg = draw_text(svg, text, transform);
         }
-        dxfio::Entity::MText(_) => {
-            log::warn!("MTEXT entity ignored.");
+        dxfio::Entity::MText(mtext) => {
+            svg = draw_mtext(svg, mtext, transform);
         }
         dxfio::Entity::NotSupported(entity_type, _) => {
             log::warn!("not supported entity type: {}", entity_type);
@@ -184,4 +184,40 @@ fn draw_dimension(
             Some("blue"),
         )
     }
+}
+
+fn draw_text(
+    svg: svg::Document,
+    text: &dxfio::Text,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    let p = transform(&text.point1);
+    let text = svg::node::element::Text::new()
+        .set("x", p[0])
+        .set("y", p[1])
+        .add(svg::node::Text::new(text.text.clone()));
+    svg.add(text)
+}
+
+fn draw_mtext(
+    svg: svg::Document,
+    mtext: &dxfio::MText,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    let text = mtext
+        .text
+        .nodes
+        .iter()
+        .filter_map(|node| match node {
+            dxfio::MTextNode::Text(s) => Some(s as _),
+            _ => None,
+        })
+        .collect::<Vec<&str>>()
+        .join("");
+    let p = transform(&mtext.point);
+    let text = svg::node::element::Text::new()
+        .set("x", p[0])
+        .set("y", p[1])
+        .add(svg::node::Text::new(text));
+    svg.add(text)
 }
