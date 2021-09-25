@@ -237,6 +237,7 @@ impl SetAtom for MText {
 
 impl SetAtom for Box<Dimension> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
+        let value = &atom.value;
         match atom.code {
             280 => atom.value.get_to(&mut self.version),
             2 => atom.value.get_to(&mut self.block_name),
@@ -269,7 +270,36 @@ impl SetAtom for Box<Dimension> {
             42 => atom.value.get_to(&mut self.actual_measurement),
             1 => atom.value.get_to(&mut self.text),
             53 => atom.value.get_to(&mut self.text_rotation_angle),
-            54 => atom.value.get_to(&mut self.horizontal_direction_angle),
+            51 => atom.value.get_to(&mut self.horizontal_direction_angle),
+
+            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
+            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
+            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+
+            13 => value.get_optional_coord_to(0, &mut self.definition_point2),
+            23 => value.get_optional_coord_to(1, &mut self.definition_point2),
+            33 => value.get_optional_coord_to(2, &mut self.definition_point2),
+
+            14 => value.get_optional_coord_to(0, &mut self.definition_point3),
+            24 => value.get_optional_coord_to(1, &mut self.definition_point3),
+            34 => value.get_optional_coord_to(2, &mut self.definition_point3),
+
+            15 => value.get_optional_coord_to(0, &mut self.definition_point4),
+            25 => value.get_optional_coord_to(1, &mut self.definition_point4),
+            35 => value.get_optional_coord_to(2, &mut self.definition_point4),
+
+            12 => value.get_optional_coord_to(0, &mut self.insertion_point),
+            22 => value.get_optional_coord_to(1, &mut self.insertion_point),
+            32 => value.get_optional_coord_to(2, &mut self.insertion_point),
+
+            16 => value.get_optional_coord_to(0, &mut self.arc_location),
+            26 => value.get_optional_coord_to(1, &mut self.arc_location),
+            36 => value.get_optional_coord_to(2, &mut self.arc_location),
+
+            50 => value.get_to(&mut self.rotation_angle),
+            52 => value.get_to(&mut self.oblique_angle),
+            40 => value.get_to(&mut self.leader_length),
+
             _ => {
                 log::warn!("unhandled atom: {:?}", atom);
                 false
