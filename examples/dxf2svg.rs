@@ -36,7 +36,7 @@ fn main() {
         svg::node::element::Rectangle::new()
             .set("fill", "white")
             .set("x", view_box.0)
-            .set("y", view_box.0)
+            .set("y", view_box.1)
             .set("width", view_box.2 - view_box.0)
             .set("height", view_box.3 - view_box.1),
     );
