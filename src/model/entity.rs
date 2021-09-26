@@ -27,13 +27,14 @@ pub struct EntityHeader {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Entity {
     Insert(Insert),
+    Text(Text),
+    MText(MText),
+    Dimension(Box<Dimension>),
     Point(Point),
     Line(Line),
     Circle(Circle),
     Arc(Arc),
-    Text(Text),
-    MText(MText),
-    Dimension(Box<Dimension>),
+    LwPolyline(LwPolyline),
     NotSupported(String, Vec<Atom<'static>>),
 }
 
@@ -171,4 +172,23 @@ pub struct Arc {
     pub circle: Circle,
     pub start_degree: f64, // 50
     pub end_degree: f64,   // 51
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LwPolyline {
+    pub vertices: Vec<LwPolylineVertex>,
+    pub is_continuous_pattern: bool, // 70 (PLINEGEN; true のとき点線・破線パターンを連続して適用)
+    pub is_closed: bool,             // 70
+    pub constant_width: Option<f64>, // 43
+    pub elevation: f64,              // 38
+    pub thickness: f64,              // 39
+    pub extrusion_direction: Option<[f64; 3]>, // 210, 220, 230
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LwPolylineVertex {
+    pub coord: [f64; 2],          // 10, 20
+    pub start_width: Option<f64>, // 40
+    pub end_width: Option<f64>,   // 41
+    pub bulge: Option<f64>,       // 42
 }

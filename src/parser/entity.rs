@@ -15,6 +15,7 @@ impl FromNode for EntityNode {
             "LINE" => parse_by(source, Entity::Line),
             "CIRCLE" => parse_by(source, Entity::Circle),
             "ARC" => parse_by(source, Entity::Arc),
+            "LWPOLYLINE" => parse_by(source, LwPolylineBuilder::into_entity),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -363,6 +364,89 @@ impl SetAtom for Arc {
                 51 => value.get_to(&mut self.end_degree),
                 _ => false,
             }
+        }
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct LwPolylineVertexFlags {
+    x: bool,
+    y: bool,
+    start_width: bool,
+    end_width: bool,
+    bulge: bool,
+}
+
+#[derive(Default)]
+struct LwPolylineBuilder {
+    target: LwPolyline,
+    vertex: LwPolylineVertex,
+    flags: LwPolylineVertexFlags,
+}
+impl LwPolylineBuilder {
+    fn push_vertex(&mut self) {
+        println!("push_vertex()");
+        self.target.vertices.push(std::mem::take(&mut self.vertex));
+        self.flags = Default::default();
+    }
+    fn into_entity(mut self) -> Entity {
+        if self.flags != Default::default() {
+            self.push_vertex();
+        }
+        Entity::LwPolyline(self.target)
+    }
+}
+impl SetAtom for LwPolylineBuilder {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        eprintln!("atom = {:?}", atom);
+        let value = &atom.value;
+        match atom.code {
+            10 if self.flags.x => self.push_vertex(),
+            20 if self.flags.y => self.push_vertex(),
+            40 if self.flags.start_width => self.push_vertex(),
+            41 if self.flags.end_width => self.push_vertex(),
+            42 if self.flags.bulge => self.push_vertex(),
+            _ => {}
+        }
+        eprintln!("flags = {:?}", self.flags);
+        match atom.code {
+            10 => {
+                self.flags.x = true;
+                value.get_to(&mut self.vertex.coord[0])
+            }
+            20 => {
+                self.flags.y = true;
+                value.get_to(&mut self.vertex.coord[1])
+            }
+            40 => {
+                self.flags.start_width = true;
+                value.get_to(&mut self.vertex.start_width)
+            }
+            41 => {
+                self.flags.end_width = true;
+                value.get_to(&mut self.vertex.end_width)
+            }
+            42 => {
+                self.flags.bulge = true;
+                value.get_to(&mut self.vertex.bulge)
+            }
+
+            70 => {
+                if let Some(flags) = value.get::<i16>() {
+                    self.target.is_closed = (flags & 0b00000001) != 0;
+                    self.target.is_continuous_pattern = (flags & 0b10000000) != 0;
+                    true
+                } else {
+                    false
+                }
+            }
+            43 => value.get_to(&mut self.target.constant_width),
+            38 => value.get_to(&mut self.target.elevation),
+            39 => value.get_to(&mut self.target.thickness),
+            210 => value.get_optional_coord_to(0, &mut self.target.extrusion_direction),
+            220 => value.get_optional_coord_to(1, &mut self.target.extrusion_direction),
+            230 => value.get_optional_coord_to(2, &mut self.target.extrusion_direction),
+            _ => false,
         }
     }
 }
