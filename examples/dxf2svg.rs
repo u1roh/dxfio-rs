@@ -67,14 +67,17 @@ fn draw_entity(
         dxfio::Entity::MText(mtext) => {
             svg = draw_mtext(svg, mtext, transform);
         }
+        dxfio::Entity::Point(_) => {
+            log::warn!("draw_entity() for Point entity: unimplemented");
+        }
         dxfio::Entity::Line(line) => {
             svg = draw_line(svg, line, transform);
         }
         dxfio::Entity::Circle(_) => {
-            log::warn!("Circle entity");
+            log::warn!("draw_entity() for Circle entity: unimplemented");
         }
         dxfio::Entity::Arc(_) => {
-            log::warn!("Arc entity");
+            log::warn!("draw_entity() for Arc entity: unimplemented");
         }
         dxfio::Entity::NotSupported(entity_type, _) => {
             log::warn!("not supported entity type: {}", entity_type);

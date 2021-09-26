@@ -27,6 +27,7 @@ pub struct EntityHeader {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Entity {
     Insert(Insert),
+    Point(Point),
     Line(Line),
     Circle(Circle),
     Arc(Arc),
@@ -62,12 +63,6 @@ impl Default for Insert {
             extrusion_direction: [0.0, 0.0, 1.0],
         }
     }
-}
-
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct Line {
-    pub p1: [f64; 3],
-    pub p2: [f64; 3],
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -145,6 +140,22 @@ pub struct Dimension {
     pub rotation_angle: Option<f64>,                   // 50
     pub oblique_angle: Option<f64>,                    // 52
     pub leader_length: Option<f64>,                    // 40
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct Point {
+    pub coord: [f64; 3],                       // 10, 20, 30
+    pub thickness: f64,                        // 39
+    pub extrusion_direction: Option<[f64; 3]>, // 210, 220, 230
+    pub x_axis_degree: Option<f64>,            // 50
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct Line {
+    pub p1: [f64; 3],                          // 10, 20, 30
+    pub p2: [f64; 3],                          // 11, 21, 31
+    pub thickness: f64,                        // 39
+    pub extrusion_direction: Option<[f64; 3]>, // 210, 220, 230
 }
 
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]

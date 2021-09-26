@@ -11,6 +11,7 @@ impl FromNode for EntityNode {
                 mtext.text.parse_and_build_nodes();
                 Entity::MText(mtext)
             }),
+            "POINT" => parse_by(source, Entity::Point),
             "LINE" => parse_by(source, Entity::Line),
             "CIRCLE" => parse_by(source, Entity::Circle),
             "ARC" => parse_by(source, Entity::Arc),
@@ -91,20 +92,6 @@ impl SetAtom for Insert {
             210 => atom.value.get_to(&mut self.extrusion_direction[0]),
             220 => atom.value.get_to(&mut self.extrusion_direction[1]),
             230 => atom.value.get_to(&mut self.extrusion_direction[2]),
-            _ => false,
-        }
-    }
-}
-
-impl SetAtom for Line {
-    fn set_atom(&mut self, atom: &Atom) -> bool {
-        match atom.code {
-            10 => atom.value.get_to(&mut self.p1[0]),
-            20 => atom.value.get_to(&mut self.p1[1]),
-            30 => atom.value.get_to(&mut self.p1[2]),
-            11 => atom.value.get_to(&mut self.p2[0]),
-            21 => atom.value.get_to(&mut self.p2[1]),
-            31 => atom.value.get_to(&mut self.p2[2]),
             _ => false,
         }
     }
@@ -308,6 +295,42 @@ impl SetAtom for Box<Dimension> {
                 log::warn!("unhandled atom: {:?}", atom);
                 false
             }
+        }
+    }
+}
+
+impl SetAtom for Point {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        let value = &atom.value;
+        match atom.code {
+            10 => atom.value.get_to(&mut self.coord[0]),
+            20 => atom.value.get_to(&mut self.coord[1]),
+            30 => atom.value.get_to(&mut self.coord[2]),
+            39 => value.get_to(&mut self.thickness),
+            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
+            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
+            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            50 => value.get_to(&mut self.x_axis_degree),
+            _ => false,
+        }
+    }
+}
+
+impl SetAtom for Line {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        let value = &atom.value;
+        match atom.code {
+            10 => atom.value.get_to(&mut self.p1[0]),
+            20 => atom.value.get_to(&mut self.p1[1]),
+            30 => atom.value.get_to(&mut self.p1[2]),
+            11 => atom.value.get_to(&mut self.p2[0]),
+            21 => atom.value.get_to(&mut self.p2[1]),
+            31 => atom.value.get_to(&mut self.p2[2]),
+            39 => value.get_to(&mut self.thickness),
+            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
+            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
+            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            _ => false,
         }
     }
 }
