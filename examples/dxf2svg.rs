@@ -49,44 +49,32 @@ fn main() {
 }
 
 fn draw_entity(
-    mut svg: svg::Document,
+    svg: svg::Document,
     entity: &dxfio::EntityNode,
     doc: &dxfio::Document,
     transform: &dyn Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
     match &entity.entity {
-        dxfio::Entity::Insert(insert) => {
-            svg = draw_insert(svg, insert, doc, transform);
-        }
-        dxfio::Entity::Dimension(dim) => {
-            svg = draw_dimension(svg, dim, doc, transform);
-        }
-        dxfio::Entity::Text(text) => {
-            svg = draw_text(svg, text, transform);
-        }
-        dxfio::Entity::MText(mtext) => {
-            svg = draw_mtext(svg, mtext, transform);
-        }
+        dxfio::Entity::Insert(insert) => draw_insert(svg, insert, doc, transform),
+        dxfio::Entity::Dimension(dim) => draw_dimension(svg, dim, doc, transform),
+        dxfio::Entity::Text(text) => draw_text(svg, text, transform),
+        dxfio::Entity::MText(mtext) => draw_mtext(svg, mtext, transform),
         dxfio::Entity::Point(_) => {
             log::warn!("draw_entity() for Point entity: unimplemented");
+            svg
         }
-        dxfio::Entity::Line(line) => {
-            svg = draw_line(svg, line, transform);
-        }
-        dxfio::Entity::Circle(_) => {
-            log::warn!("draw_entity() for Circle entity: unimplemented");
-        }
+        dxfio::Entity::Line(line) => draw_line(svg, line, transform),
+        dxfio::Entity::Circle(cir) => draw_circle(svg, cir, transform),
         dxfio::Entity::Arc(_) => {
             log::warn!("draw_entity() for Arc entity: unimplemented");
+            svg
         }
-        dxfio::Entity::LwPolyline(pol) => {
-            svg = draw_lw_polyline(svg, pol, transform);
-        }
+        dxfio::Entity::LwPolyline(pol) => draw_lw_polyline(svg, pol, transform),
         dxfio::Entity::NotSupported(entity_type, _) => {
             log::warn!("not supported entity type: {}", entity_type);
+            svg
         }
     }
-    svg
 }
 
 fn draw_insert(
@@ -283,4 +271,20 @@ fn draw_lw_polyline(
         data = data.close();
     }
     svg.add(create_path(data))
+}
+
+fn draw_circle(
+    svg: svg::Document,
+    cir: &dxfio::Circle,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    let center = transform(&cir.center);
+    let element = svg::node::element::Circle::new()
+        .set("cx", center[0])
+        .set("cy", center[1])
+        .set("r", cir.radius)
+        .set("fill", "none")
+        .set("stroke", "black")
+        .set("stroke-width", 1);
+    svg.add(element)
 }
