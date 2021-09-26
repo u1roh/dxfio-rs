@@ -13,6 +13,14 @@ impl From<&[f64; 3]> for Pos {
         }
     }
 }
+impl From<[f64; 3]> for Pos {
+    fn from(src: [f64; 3]) -> Self {
+        Self {
+            x: src[0],
+            y: src[1],
+        }
+    }
+}
 impl From<Pos> for [f64; 3] {
     fn from(src: Pos) -> Self {
         [src.x, src.y, 0.0]
@@ -41,6 +49,14 @@ impl std::ops::Sub for Pos {
 pub struct Vec {
     pub x: f64,
     pub y: f64,
+}
+impl From<[f64; 3]> for Vec {
+    fn from(src: [f64; 3]) -> Self {
+        Self {
+            x: src[0],
+            y: src[1],
+        }
+    }
 }
 impl std::ops::Mul<Vec> for f64 {
     type Output = Vec;

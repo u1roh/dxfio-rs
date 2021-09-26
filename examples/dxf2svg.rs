@@ -200,24 +200,49 @@ fn draw_text(
 }
 
 fn draw_mtext(
-    svg: svg::Document,
+    mut svg: svg::Document,
     mtext: &dxfio::MText,
     transform: impl Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
-    let text = mtext
-        .text
-        .nodes
-        .iter()
-        .filter_map(|node| match node {
-            dxfio::MTextNode::Text(s) => Some(s as _),
-            _ => None,
-        })
-        .collect::<Vec<&str>>()
-        .join("");
-    let p = transform(&mtext.point);
-    let text = svg::node::element::Text::new()
-        .set("x", p[0])
-        .set("y", p[1])
-        .add(svg::node::Text::new(text));
-    svg.add(text)
+    println!("mtext.x_axis = {:?}", mtext.x_axis);
+    println!("mtext.rotation_radian = {:?}", mtext.rotation_radian);
+    println!("mtext.rectangle_width = {}", mtext.rectangle_width);
+    println!("mtext.character_width = {}", mtext.character_width);
+    svg = {
+        let p = transform(&mtext.point);
+        let text = mtext
+            .text
+            .nodes
+            .iter()
+            .filter_map(|node| match node {
+                dxfio::MTextNode::Text(s) => Some(s as _),
+                _ => None,
+            })
+            .collect::<Vec<&str>>()
+            .join("");
+        let text = svg::node::element::Text::new()
+            .set("x", p[0])
+            .set("y", p[1])
+            .add(svg::node::Text::new(text));
+        svg.add(text)
+    };
+    svg = {
+        let rect = {
+            let u: geom2d::Vec = mtext.x_axis.unwrap_or([1.0, 0.0, 0.0]).into();
+            let v = geom2d::Vec { x: -u.y, y: u.x };
+            let p0: geom2d::Pos = mtext.point.into();
+            let p1 = p0 + mtext.rectangle_width * u;
+            let p2 = p1 + mtext.height * v;
+            let p3 = p0 + mtext.height * v;
+            [
+                transform(&p0.into()),
+                transform(&p1.into()),
+                transform(&p2.into()),
+                transform(&p3.into()),
+                transform(&p0.into()),
+            ]
+        };
+        line_strip(svg, &rect, Some("blue"))
+    };
+    svg
 }

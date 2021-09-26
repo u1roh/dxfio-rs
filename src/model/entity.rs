@@ -89,7 +89,7 @@ pub struct MText {
     pub text: super::MTextFormatString,                 // 1, 3
     pub style_name: Option<String>,                     // 7 (default = STANDARD)
     pub point: [f64; 3],                                // 10, 20, 30
-    pub x_axis: [f64; 3],                               // 11, 21, 31
+    pub x_axis: Option<[f64; 3]>,                       // 11, 21, 31
     pub height: f64,                                    // 40
     pub rectangle_width: f64,                           // 41
     pub character_width: f64,                           // 42
