@@ -58,9 +58,6 @@ fn draw_entity(
         dxfio::Entity::Insert(insert) => {
             svg = draw_insert(svg, insert, doc, transform);
         }
-        dxfio::Entity::Line(line) => {
-            svg = draw_line(svg, line, transform);
-        }
         dxfio::Entity::Dimension(dim) => {
             svg = draw_dimension(svg, dim, doc, transform);
         }
@@ -69,6 +66,15 @@ fn draw_entity(
         }
         dxfio::Entity::MText(mtext) => {
             svg = draw_mtext(svg, mtext, transform);
+        }
+        dxfio::Entity::Line(line) => {
+            svg = draw_line(svg, line, transform);
+        }
+        dxfio::Entity::Circle(_) => {
+            log::warn!("Circle entity");
+        }
+        dxfio::Entity::Arc(_) => {
+            log::warn!("Arc entity");
         }
         dxfio::Entity::NotSupported(entity_type, _) => {
             log::warn!("not supported entity type: {}", entity_type);
@@ -204,10 +210,10 @@ fn draw_mtext(
     mtext: &dxfio::MText,
     transform: impl Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
-    println!("mtext.x_axis = {:?}", mtext.x_axis);
-    println!("mtext.rotation_radian = {:?}", mtext.rotation_radian);
-    println!("mtext.rectangle_width = {}", mtext.rectangle_width);
-    println!("mtext.character_width = {}", mtext.character_width);
+    log::info!("mtext.x_axis = {:?}", mtext.x_axis);
+    log::info!("mtext.rotation_radian = {:?}", mtext.rotation_radian);
+    log::info!("mtext.rectangle_width = {}", mtext.rectangle_width);
+    log::info!("mtext.character_width = {}", mtext.character_width);
     svg = {
         let p = transform(&mtext.point);
         let text = mtext

@@ -6,12 +6,13 @@ impl FromNode for EntityNode {
         match source.node_type.as_ref() {
             "INSERT" => parse_by(source, Entity::Insert),
             "DIMENSION" => parse_by(source, Entity::Dimension),
-            "LINE" => parse_by(source, Entity::Line),
             "TEXT" => parse_by(source, Entity::Text),
             "MTEXT" => parse_by(source, |mut mtext: MText| {
                 mtext.text.parse_and_build_nodes();
                 Entity::MText(mtext)
             }),
+            "LINE" => parse_by(source, Entity::Line),
+            "CIRCLE" => parse_by(source, Entity::Circle),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -306,6 +307,23 @@ impl SetAtom for Box<Dimension> {
                 log::warn!("unhandled atom: {:?}", atom);
                 false
             }
+        }
+    }
+}
+
+impl SetAtom for Circle {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        let value = &atom.value;
+        match atom.code {
+            10 => value.get_to(&mut self.center[0]),
+            20 => value.get_to(&mut self.center[1]),
+            30 => value.get_to(&mut self.center[2]),
+            40 => value.get_to(&mut self.radius),
+            39 => value.get_to(&mut self.thickness),
+            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
+            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
+            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            _ => false,
         }
     }
 }

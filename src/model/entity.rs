@@ -28,6 +28,8 @@ pub struct EntityHeader {
 pub enum Entity {
     Insert(Insert),
     Line(Line),
+    Circle(Circle),
+    Arc(Arc),
     Text(Text),
     MText(MText),
     Dimension(Box<Dimension>),
@@ -143,4 +145,19 @@ pub struct Dimension {
     pub rotation_angle: Option<f64>,                   // 50
     pub oblique_angle: Option<f64>,                    // 52
     pub leader_length: Option<f64>,                    // 40
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Circle {
+    pub thickness: f64,                        // 39
+    pub center: [f64; 3],                      // 10, 20, 30
+    pub radius: f64,                           // 40
+    pub extrusion_direction: Option<[f64; 3]>, // 210, 220, 230
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Arc {
+    pub circle: Circle,
+    pub start_degree: f64, // 50
+    pub end_degree: f64,   // 51
 }
