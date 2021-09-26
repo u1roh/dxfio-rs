@@ -13,6 +13,7 @@ impl FromNode for EntityNode {
             }),
             "LINE" => parse_by(source, Entity::Line),
             "CIRCLE" => parse_by(source, Entity::Circle),
+            "ARC" => parse_by(source, Entity::Arc),
             _ => parse_by(source, |atoms| {
                 Entity::NotSupported((*source.node_type).to_owned(), atoms)
             }),
@@ -324,6 +325,21 @@ impl SetAtom for Circle {
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
             _ => false,
+        }
+    }
+}
+
+impl SetAtom for Arc {
+    fn set_atom(&mut self, atom: &Atom) -> bool {
+        if self.circle.set_atom(atom) {
+            true
+        } else {
+            let value = &atom.value;
+            match atom.code {
+                50 => value.get_to(&mut self.start_degree),
+                51 => value.get_to(&mut self.end_degree),
+                _ => false,
+            }
         }
     }
 }
