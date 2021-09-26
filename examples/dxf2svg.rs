@@ -79,6 +79,9 @@ fn draw_entity(
         dxfio::Entity::Arc(_) => {
             log::warn!("draw_entity() for Arc entity: unimplemented");
         }
+        dxfio::Entity::LwPolyline(pol) => {
+            svg = draw_lw_polyline(svg, pol, transform);
+        }
         dxfio::Entity::NotSupported(entity_type, _) => {
             log::warn!("not supported entity type: {}", entity_type);
         }
@@ -124,26 +127,24 @@ fn draw_insert(
     svg
 }
 
-fn draw_line(
-    svg: svg::Document,
-    line: &dxfio::Line,
-    transform: impl Fn(&[f64; 3]) -> [f64; 3],
-) -> svg::Document {
-    line_strip(svg, &[transform(&line.p1), transform(&line.p2)], None)
+fn points_to_pathdata(pol: &[[f64; 3]]) -> svg::node::element::path::Data {
+    let data = svg::node::element::path::Data::new().move_to((pol[0][0], pol[0][1]));
+    pol[1..]
+        .iter()
+        .fold(data, |data, p| data.line_to((p[0], p[1])))
+}
+
+fn create_path(data: svg::node::element::path::Data) -> svg::node::element::Path {
+    svg::node::element::Path::new()
+        .set("fill", "none")
+        .set("stroke", "black")
+        .set("stroke-width", 1)
+        .set("d", data)
 }
 
 fn line_strip(svg: svg::Document, pol: &[[f64; 3]], color: Option<&'static str>) -> svg::Document {
     if pol.len() >= 2 {
-        let data = svg::node::element::path::Data::new().move_to((pol[0][0], pol[0][1]));
-        let data = (1..pol.len())
-            .map(|i| (pol[i][0] - pol[i - 1][0], pol[i][1] - pol[i - 1][1]))
-            .fold(data, |data, v| data.line_by(v));
-        let path = svg::node::element::Path::new()
-            .set("fill", "none")
-            .set("stroke", color.unwrap_or("black"))
-            .set("stroke-width", 1)
-            .set("d", data);
-        svg.add(path)
+        svg.add(create_path(points_to_pathdata(pol)).set("stroke", color.unwrap_or("black")))
     } else {
         svg
     }
@@ -254,4 +255,32 @@ fn draw_mtext(
         line_strip(svg, &rect, Some("blue"))
     };
     svg
+}
+
+fn draw_line(
+    svg: svg::Document,
+    line: &dxfio::Line,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    svg.add(create_path(points_to_pathdata(&[
+        transform(&line.p1),
+        transform(&line.p2),
+    ])))
+}
+
+fn draw_lw_polyline(
+    svg: svg::Document,
+    pol: &dxfio::LwPolyline,
+    transform: impl Fn(&[f64; 3]) -> [f64; 3],
+) -> svg::Document {
+    let points = pol
+        .vertices
+        .iter()
+        .map(|v| transform(&[v.coord[0], v.coord[1], 0.0]))
+        .collect::<Vec<_>>();
+    let mut data = points_to_pathdata(&points);
+    if pol.is_closed {
+        data = data.close();
+    }
+    svg.add(create_path(data))
 }

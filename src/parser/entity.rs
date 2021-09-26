@@ -293,7 +293,7 @@ impl SetAtom for Box<Dimension> {
             40 => value.get_to(&mut self.leader_length),
 
             _ => {
-                log::warn!("unhandled atom: {:?}", atom);
+                log::info!("unhandled atom: {:?}", atom);
                 false
             }
         }
@@ -385,7 +385,6 @@ struct LwPolylineBuilder {
 }
 impl LwPolylineBuilder {
     fn push_vertex(&mut self) {
-        println!("push_vertex()");
         self.target.vertices.push(std::mem::take(&mut self.vertex));
         self.flags = Default::default();
     }
@@ -398,7 +397,6 @@ impl LwPolylineBuilder {
 }
 impl SetAtom for LwPolylineBuilder {
     fn set_atom(&mut self, atom: &Atom) -> bool {
-        eprintln!("atom = {:?}", atom);
         let value = &atom.value;
         match atom.code {
             10 if self.flags.x => self.push_vertex(),
@@ -408,7 +406,6 @@ impl SetAtom for LwPolylineBuilder {
             42 if self.flags.bulge => self.push_vertex(),
             _ => {}
         }
-        eprintln!("flags = {:?}", self.flags);
         match atom.code {
             10 => {
                 self.flags.x = true;
