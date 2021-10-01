@@ -158,14 +158,14 @@ pub(super) fn parse_control_codes(mut src: &str) -> String {
         dst += &src[..k];
         src = &src[k + 2..];
         // 仕様が理解できず。"%% nnn" と書かれているが、3桁固定…？ Unicodeは十進数3桁では収まらないが…。
-        if let Some(ch) = src[..3].parse().ok().and_then(char::from_u32) {
+        if let Some(ch) = src.get(..3).and_then(|s| s.parse().ok()).and_then(char::from_u32) {
             src = &src[3..];
             dst.push(ch);
         } else {
             match &src[..1] {
-                "c" => dst.push('⌀'),
-                "d" => dst.push('°'),
-                "p" => dst.push('±'),
+                "c" | "C" => dst.push('⌀'),
+                "d" | "D" => dst.push('°'),
+                "p" | "P" => dst.push('±'),
                 "%" => dst.push('%'),
                 "o" => {
                     dst += if overlined { "\\O" } else { "\\o" };
