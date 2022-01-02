@@ -61,20 +61,24 @@ impl<'a> NodeParser<'a> {
         }
     }
     fn parse_node(&self, start: usize) -> Option<(Node<'a>, usize)> {
-        const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
+        fn is_container_type(node: &Node) -> bool {
+            const CONTAINER_TYPES: &[&str] = &["SECTION", "BLOCK", "TABLE", "POLYLINE"];
+            CONTAINER_TYPES.contains(&&*node.node_type)
+                || (node.node_type == "INSERT"
+                    && node
+                        .atoms
+                        .iter()
+                        .any(|a| a.code == 66 && a.value.get() == Some(1i16)))
+        }
         assert!(is_node_starting_code(self.atoms[start].code));
         let node_type = self.atoms[start].value.get().unwrap_or_default();
-        if CONTAINER_TYPES.contains(&node_type) {
-            self.parse_container(node_type, start + 1)
-        } else {
-            self.parse_element(node_type, start + 1)
+        let (mut node, mut pos) = self.parse_element(node_type, start + 1)?;
+        if is_container_type(&node) {
+            let (nodes, end) = self.parse_nodes(pos)?;
+            node.nodes = nodes;
+            pos = end;
         }
-    }
-    fn parse_container(&self, node_type: &'a str, start: usize) -> Option<(Node<'a>, usize)> {
-        let (mut node, start) = self.parse_element(node_type, start)?;
-        let (nodes, end) = self.parse_nodes(start)?;
-        node.nodes = nodes;
-        Some((node, end))
+        Some((node, pos))
     }
     fn parse_element(&self, node_type: &'a str, start: usize) -> Option<(Node<'a>, usize)> {
         (start..self.atoms.len())
