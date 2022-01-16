@@ -159,3 +159,27 @@ pub enum TextVerticalAlignment {
     Middle,
     Top,
 }
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PolylineFlags {
+    pub closed_polyline: bool,
+    pub curve_fit_vertices: bool,
+    pub spline_fit_vertices: bool,
+    pub polyline_3d: bool,
+    pub polygon_mesh_3d: bool,
+    pub closed_in_n_direction: bool,
+    pub polyface_mesh: bool,
+    pub continuous_linetype_pattern: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum PolylineSmoothType {
+    QuadraticBSpline,
+    CubicBSpline,
+    Bezier,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct VertexFlags {
+    // not implemented
+}

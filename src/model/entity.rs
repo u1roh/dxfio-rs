@@ -180,8 +180,8 @@ pub struct LwPolyline {
     pub is_continuous_pattern: bool, // 70 (PLINEGEN; true のとき点線・破線パターンを連続して適用)
     pub is_closed: bool,             // 70
     pub constant_width: Option<f64>, // 43
-    pub elevation: f64,              // 38
-    pub thickness: f64,              // 39
+    pub elevation: Option<f64>,      // 38
+    pub thickness: Option<f64>,      // 39
     pub extrusion_direction: Option<[f64; 3]>, // 210, 220, 230
 }
 
@@ -191,4 +191,32 @@ pub struct LwPolylineVertex {
     pub start_width: Option<f64>, // 40
     pub end_width: Option<f64>,   // 41
     pub bulge: Option<f64>,       // 42
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Polyline {
+    pub elevation: Option<f64>,                  // 30
+    pub thickness: Option<f64>,                  // 39
+    pub flags: PolylineFlags,                    // 70
+    pub default_start_width: Option<f64>,        // 40
+    pub default_end_width: Option<f64>,          // 41
+    pub polygon_mesh_M_vertex_count: usize,      // 71
+    pub polygon_mesh_N_vertex_count: usize,      // 72
+    pub smooth_surface_M_density: f64,           // 73
+    pub smooth_surface_N_density: f64,           // 74
+    pub smooth_type: Option<PolylineSmoothType>, // 75
+    pub extrusion_direction: Option<[f64; 3]>,   // 210, 220, 230
+}
+
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Vertex {
+    pub coord: [f64; 3],                  // 10, 20, 30
+    pub start_width: Option<f64>,         // 40
+    pub end_width: Option<f64>,           // 41
+    pub bulge: Option<f64>,               // 42
+    pub flags: VertexFlags,               // 70 vertex flags
+    pub curve_fit_tangent_direction: f64, // 50 tangent direction
+    pub polyface_mesh_vertex_index: Option<[usize; 4]>,
+    pub id: i32,
 }
