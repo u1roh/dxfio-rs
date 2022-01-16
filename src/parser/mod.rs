@@ -73,6 +73,19 @@ pub trait FromNode {
 
 pub trait SetAtom: Default {
     fn set_atom(&mut self, atom: &Atom) -> bool;
+    fn add_nodes(&mut self, nodes: &[Node]) -> bool {
+        if nodes.is_empty() {
+            true
+        } else {
+            log::error!("sub nodes are ignored @ {}", std::any::type_name::<Self>());
+            log::error!("nodes.len() = {}", nodes.len());
+            log::error!(
+                "nodes = {:?}",
+                nodes.iter().map(|n| &n.node_type).collect::<Vec<_>>()
+            );
+            false
+        }
+    }
 }
 
 impl<T: SetAtom> FromNode for T {
@@ -81,6 +94,7 @@ impl<T: SetAtom> FromNode for T {
         for atom in source.atoms.iter() {
             dst.set_atom(atom);
         }
+        dst.add_nodes(&source.nodes);
         dst
     }
 }
