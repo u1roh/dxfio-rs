@@ -89,6 +89,26 @@ impl<'a> Value<'a> {
     }
 }
 
+impl<'a> std::fmt::Display for Value<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::String(s) => s.fmt(f),
+            Self::F64(x) => x.fmt(f),
+            Self::I64(x) => x.fmt(f),
+            Self::I32(x) => x.fmt(f),
+            Self::I16(x) => x.fmt(f),
+            Self::Bool(x) => write!(f, "{}", if *x { 1 } else { 0 }),
+            Self::Handle(x) => write!(f, "{:0X}", x),
+            Self::Bytes(bytes) => {
+                for x in bytes {
+                    write!(f, "{:0X}", x)?
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 pub trait FromValue<'a>: Sized {
     fn from_value(value: &'a Value<'a>) -> Option<Self>;
 }
