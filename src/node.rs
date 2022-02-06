@@ -37,6 +37,16 @@ impl<'a> Node<'a> {
     pub fn parse_atoms(atoms: &'a [Atom<'a>]) -> Vec<Self> {
         NodeParser { atoms }.parse_nodes(0).unwrap_or_default().0
     }
+    pub fn iter_atoms(&self) -> Box<dyn Iterator<Item = Atom<'a>> + '_> {
+        Box::new(
+            std::iter::once(Atom {
+                code: 0,
+                value: crate::Value::String(self.node_type.clone()),
+            })
+            .chain(self.atoms.iter().cloned())
+            .chain(self.nodes.iter().flat_map(Self::iter_atoms)),
+        )
+    }
 }
 
 // ---------------------------
