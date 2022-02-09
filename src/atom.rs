@@ -26,7 +26,7 @@ impl<'a> Atom<'a> {
     }
     pub fn parse_line_pair(line1: &'a str, line2: &'a str) -> ParseResult<Self> {
         let code = line1.parse::<i16>()?;
-        let value = Value::String(Cow::Borrowed(line2));
+        let value = Value(Cow::Borrowed(line2));
         Ok(Self { code, value })
     }
 }

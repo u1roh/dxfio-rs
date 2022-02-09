@@ -1,8 +1,12 @@
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum Value<'a> {
-    String(Cow<'a, str>),
+pub struct Value<'a>(pub Cow<'a, str>);
+impl<'a> std::ops::Deref for Value<'a> {
+    type Target = str;
+    fn deref(&self) -> &str {
+        &self.0
+    }
 }
 impl<'a> Value<'a> {
     pub fn get<T: FromValue<'a>>(&'a self) -> Option<T> {
@@ -40,9 +44,7 @@ impl<'a> Value<'a> {
         }
     }
     pub fn as_handle(&self) -> Option<u32> {
-        match self {
-            Self::String(s) => u32::from_str_radix(s, 16).ok(),
-        }
+        u32::from_str_radix(&self.0, 16).ok()
     }
     pub fn as_handle_to(&self, dst: &mut u32) -> bool {
         if let Some(handle) = self.as_handle() {
@@ -67,17 +69,13 @@ impl<'a> Value<'a> {
         }
     }
     pub fn into_owned(self) -> Value<'static> {
-        match self {
-            Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
-        }
+        Value(Cow::Owned(self.0.into_owned()))
     }
 }
 
 impl<'a> std::fmt::Display for Value<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-        }
+        self.0.fmt(f)
     }
 }
 
@@ -93,57 +91,41 @@ impl<'a, T: FromValue<'a>> FromValue<'a> for Option<T> {
 
 impl<'a> FromValue<'a> for &'a str {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => Some(s),
-        }
+        Some(&value.0)
     }
 }
 impl<'a> FromValue<'a> for String {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => Some(s.as_ref().to_owned()),
-        }
+        Some(value.to_string())
     }
 }
 impl<'a> FromValue<'a> for f64 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
 impl<'a> FromValue<'a> for i64 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
 impl<'a> FromValue<'a> for i32 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
 impl<'a> FromValue<'a> for i16 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
 impl<'a> FromValue<'a> for u32 {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
 impl<'a> FromValue<'a> for usize {
     fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        match value {
-            Value::String(s) => s.parse().ok(),
-        }
+        value.parse().ok()
     }
 }
