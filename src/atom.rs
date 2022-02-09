@@ -1,17 +1,17 @@
-use crate::{ParseResult, Value};
+use crate::ParseResult;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Atom<'a> {
     pub code: i16,
-    pub value: Value<'a>,
+    pub value: Cow<'a, str>,
 }
 
 impl<'a> Atom<'a> {
     pub fn to_owned(&self) -> Atom<'static> {
         Atom {
             code: self.code,
-            value: self.value.clone().into_owned(),
+            value: Cow::Owned(self.value.clone().into_owned()),
         }
     }
 
@@ -26,7 +26,7 @@ impl<'a> Atom<'a> {
     }
     pub fn parse_line_pair(line1: &'a str, line2: &'a str) -> ParseResult<Self> {
         let code = line1.parse::<i16>()?;
-        let value = Value(Cow::Borrowed(line2));
+        let value = Cow::Borrowed(line2);
         Ok(Self { code, value })
     }
 }

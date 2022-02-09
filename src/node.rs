@@ -43,7 +43,7 @@ impl<'a> Node<'a> {
         Box::new(
             std::iter::once(Atom {
                 code: 0,
-                value: crate::Value(self.node_type.clone()),
+                value: self.node_type.clone(),
             })
             .chain(self.atoms.iter().cloned())
             .chain(self.nodes.iter().flat_map(Self::iter_atoms))

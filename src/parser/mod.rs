@@ -146,3 +146,18 @@ fn parse_and_then_to<T: std::str::FromStr, U>(
         false
     }
 }
+
+fn parse_optional_coord_to(s: &str, i: usize, dst: &mut Option<[f64; 3]>) -> bool {
+    if let Ok(x) = s.parse() {
+        if let Some(dst) = dst {
+            dst[i] = x;
+        } else {
+            let mut coord = [0.0, 0.0, 0.0];
+            coord[i] = x;
+            *dst = Some(coord);
+        }
+        true
+    } else {
+        false
+    }
+}

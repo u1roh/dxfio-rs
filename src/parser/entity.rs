@@ -44,7 +44,14 @@ impl<T: SetAtom> SetAtom for (EntityHeader, T) {
 impl SetAtom for EntityHeader {
     fn set_atom(&mut self, atom: &super::Atom) -> bool {
         match atom.code {
-            5 => atom.value.as_handle_to(&mut self.handle),
+            5 => {
+                if let Ok(handle) = u32::from_str_radix(&atom.value, 16) {
+                    self.handle = handle;
+                    true
+                } else {
+                    false
+                }
+            }
             67 => super::parse_to(&atom.value, &mut self.space),
             8 => super::parse_to(&atom.value, &mut self.layer),
             6 => super::parse_to(&atom.value, &mut self.line_type),
@@ -150,15 +157,9 @@ impl SetAtom for Text {
                     false
                 }
             }
-            210 => atom
-                .value
-                .get_optional_coord_to(0, &mut self.extrusion_vector),
-            220 => atom
-                .value
-                .get_optional_coord_to(1, &mut self.extrusion_vector),
-            230 => atom
-                .value
-                .get_optional_coord_to(2, &mut self.extrusion_vector),
+            210 => super::parse_optional_coord_to(&atom.value, 0, &mut self.extrusion_vector),
+            220 => super::parse_optional_coord_to(&atom.value, 1, &mut self.extrusion_vector),
+            230 => super::parse_optional_coord_to(&atom.value, 2, &mut self.extrusion_vector),
             _ => false,
         }
     }
@@ -175,23 +176,17 @@ impl SetAtom for MText {
             10 => super::parse_to(&atom.value, &mut self.point[0]),
             20 => super::parse_to(&atom.value, &mut self.point[1]),
             30 => super::parse_to(&atom.value, &mut self.point[2]),
-            11 => atom.value.get_optional_coord_to(0, &mut self.x_axis),
-            21 => atom.value.get_optional_coord_to(1, &mut self.x_axis),
-            31 => atom.value.get_optional_coord_to(2, &mut self.x_axis),
+            11 => super::parse_optional_coord_to(&atom.value, 0, &mut self.x_axis),
+            21 => super::parse_optional_coord_to(&atom.value, 1, &mut self.x_axis),
+            31 => super::parse_optional_coord_to(&atom.value, 2, &mut self.x_axis),
             40 => super::parse_to(&atom.value, &mut self.height),
             41 => super::parse_to(&atom.value, &mut self.rectangle_width),
             42 => super::parse_to(&atom.value, &mut self.character_width),
             43 => super::parse_to(&atom.value, &mut self.character_height),
             50 => super::parse_to_option(&atom.value, &mut self.rotation_radian),
-            210 => atom
-                .value
-                .get_optional_coord_to(0, &mut self.extrusion_vector),
-            220 => atom
-                .value
-                .get_optional_coord_to(1, &mut self.extrusion_vector),
-            230 => atom
-                .value
-                .get_optional_coord_to(2, &mut self.extrusion_vector),
+            210 => super::parse_optional_coord_to(&atom.value, 0, &mut self.extrusion_vector),
+            220 => super::parse_optional_coord_to(&atom.value, 1, &mut self.extrusion_vector),
+            230 => super::parse_optional_coord_to(&atom.value, 2, &mut self.extrusion_vector),
             71 => super::parse_to(&atom.value, &mut self.attachment_point),
             72 => super::parse_to(&atom.value, &mut self.drawing_direction),
             73 => super::parse_to(&atom.value, &mut self.line_spacing_style),
@@ -258,31 +253,31 @@ impl SetAtom for Box<Dimension> {
             53 => super::parse_to_option(&atom.value, &mut self.text_rotation_angle),
             51 => super::parse_to_option(&atom.value, &mut self.horizontal_direction_angle),
 
-            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
-            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
-            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            210 => super::parse_optional_coord_to(value, 0, &mut self.extrusion_direction),
+            220 => super::parse_optional_coord_to(value, 1, &mut self.extrusion_direction),
+            230 => super::parse_optional_coord_to(value, 2, &mut self.extrusion_direction),
 
             3 => super::parse_to(value, &mut self.dimension_style),
 
-            13 => value.get_optional_coord_to(0, &mut self.definition_point2),
-            23 => value.get_optional_coord_to(1, &mut self.definition_point2),
-            33 => value.get_optional_coord_to(2, &mut self.definition_point2),
+            13 => super::parse_optional_coord_to(value, 0, &mut self.definition_point2),
+            23 => super::parse_optional_coord_to(value, 1, &mut self.definition_point2),
+            33 => super::parse_optional_coord_to(value, 2, &mut self.definition_point2),
 
-            14 => value.get_optional_coord_to(0, &mut self.definition_point3),
-            24 => value.get_optional_coord_to(1, &mut self.definition_point3),
-            34 => value.get_optional_coord_to(2, &mut self.definition_point3),
+            14 => super::parse_optional_coord_to(value, 0, &mut self.definition_point3),
+            24 => super::parse_optional_coord_to(value, 1, &mut self.definition_point3),
+            34 => super::parse_optional_coord_to(value, 2, &mut self.definition_point3),
 
-            15 => value.get_optional_coord_to(0, &mut self.definition_point4),
-            25 => value.get_optional_coord_to(1, &mut self.definition_point4),
-            35 => value.get_optional_coord_to(2, &mut self.definition_point4),
+            15 => super::parse_optional_coord_to(value, 0, &mut self.definition_point4),
+            25 => super::parse_optional_coord_to(value, 1, &mut self.definition_point4),
+            35 => super::parse_optional_coord_to(value, 2, &mut self.definition_point4),
 
-            12 => value.get_optional_coord_to(0, &mut self.insertion_point),
-            22 => value.get_optional_coord_to(1, &mut self.insertion_point),
-            32 => value.get_optional_coord_to(2, &mut self.insertion_point),
+            12 => super::parse_optional_coord_to(value, 0, &mut self.insertion_point),
+            22 => super::parse_optional_coord_to(value, 1, &mut self.insertion_point),
+            32 => super::parse_optional_coord_to(value, 2, &mut self.insertion_point),
 
-            16 => value.get_optional_coord_to(0, &mut self.arc_location),
-            26 => value.get_optional_coord_to(1, &mut self.arc_location),
-            36 => value.get_optional_coord_to(2, &mut self.arc_location),
+            16 => super::parse_optional_coord_to(value, 0, &mut self.arc_location),
+            26 => super::parse_optional_coord_to(value, 1, &mut self.arc_location),
+            36 => super::parse_optional_coord_to(value, 2, &mut self.arc_location),
 
             50 => super::parse_to_option(value, &mut self.rotation_angle),
             52 => super::parse_to_option(value, &mut self.oblique_angle),
@@ -304,9 +299,9 @@ impl SetAtom for Point {
             20 => super::parse_to(&atom.value, &mut self.coord[1]),
             30 => super::parse_to(&atom.value, &mut self.coord[2]),
             39 => super::parse_to(value, &mut self.thickness),
-            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
-            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
-            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            210 => super::parse_optional_coord_to(value, 0, &mut self.extrusion_direction),
+            220 => super::parse_optional_coord_to(value, 1, &mut self.extrusion_direction),
+            230 => super::parse_optional_coord_to(value, 2, &mut self.extrusion_direction),
             50 => super::parse_to_option(value, &mut self.x_axis_degree),
             _ => false,
         }
@@ -324,9 +319,9 @@ impl SetAtom for Line {
             21 => super::parse_to(&atom.value, &mut self.p2[1]),
             31 => super::parse_to(&atom.value, &mut self.p2[2]),
             39 => super::parse_to(value, &mut self.thickness),
-            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
-            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
-            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            210 => super::parse_optional_coord_to(value, 0, &mut self.extrusion_direction),
+            220 => super::parse_optional_coord_to(value, 1, &mut self.extrusion_direction),
+            230 => super::parse_optional_coord_to(value, 2, &mut self.extrusion_direction),
             _ => false,
         }
     }
@@ -341,9 +336,9 @@ impl SetAtom for Circle {
             30 => super::parse_to(value, &mut self.center[2]),
             40 => super::parse_to(value, &mut self.radius),
             39 => super::parse_to(value, &mut self.thickness),
-            210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
-            220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
-            230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
+            210 => super::parse_optional_coord_to(value, 0, &mut self.extrusion_direction),
+            220 => super::parse_optional_coord_to(value, 1, &mut self.extrusion_direction),
+            230 => super::parse_optional_coord_to(value, 2, &mut self.extrusion_direction),
             _ => false,
         }
     }
@@ -436,9 +431,9 @@ impl SetAtom for LwPolylineBuilder {
             43 => super::parse_to_option(value, &mut self.target.constant_width),
             38 => super::parse_to_option(value, &mut self.target.elevation),
             39 => super::parse_to_option(value, &mut self.target.thickness),
-            210 => value.get_optional_coord_to(0, &mut self.target.extrusion_direction),
-            220 => value.get_optional_coord_to(1, &mut self.target.extrusion_direction),
-            230 => value.get_optional_coord_to(2, &mut self.target.extrusion_direction),
+            210 => super::parse_optional_coord_to(value, 0, &mut self.target.extrusion_direction),
+            220 => super::parse_optional_coord_to(value, 1, &mut self.target.extrusion_direction),
+            230 => super::parse_optional_coord_to(value, 2, &mut self.target.extrusion_direction),
             _ => false,
         }
     }

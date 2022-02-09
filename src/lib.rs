@@ -3,9 +3,6 @@ pub mod parser;
 mod model;
 pub use model::*;
 
-mod value;
-pub use value::Value;
-
 mod atom;
 pub use atom::Atom;
 
