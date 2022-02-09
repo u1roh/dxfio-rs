@@ -10,11 +10,8 @@ impl<'a> std::ops::Deref for Value<'a> {
     }
 }
 impl<'a> Value<'a> {
-    pub fn get<T: FromStr>(&'a self) -> Option<T> {
-        T::from_str(self).ok()
-    }
     pub fn get_to<T: FromStr>(&'a self, dst: &mut T) -> bool {
-        if let Some(x) = self.get() {
+        if let Ok(x) = self.parse() {
             *dst = x;
             true
         } else {
@@ -27,7 +24,7 @@ impl<'a> Value<'a> {
         }
     }
     pub fn get_to_option<T: FromStr>(&'a self, dst: &mut Option<T>) -> bool {
-        if let Some(x) = self.get() {
+        if let Ok(x) = self.parse() {
             *dst = Some(x);
             true
         } else {
@@ -41,7 +38,7 @@ impl<'a> Value<'a> {
         }
     }
     pub fn and_then_to<T: FromStr, U>(&'a self, dst: &mut U, f: impl Fn(T) -> Option<U>) -> bool {
-        if let Some(x) = self.get().and_then(f) {
+        if let Some(x) = self.parse().ok().and_then(f) {
             *dst = x;
             true
         } else {
@@ -66,7 +63,7 @@ impl<'a> Value<'a> {
         }
     }
     pub fn get_optional_coord_to(&self, i: usize, dst: &mut Option<[f64; 3]>) -> bool {
-        if let Some(x) = self.get() {
+        if let Some(x) = self.parse().ok() {
             if let Some(dst) = dst {
                 dst[i] = x;
             } else {

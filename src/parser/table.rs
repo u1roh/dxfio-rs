@@ -9,7 +9,7 @@ impl FromNode for TableNode {
                 .atoms
                 .iter()
                 .find(|a| a.code == 5)
-                .and_then(|a| a.value.get())
+                .and_then(|a| u32::from_str_radix(&a.value, 16).ok())
                 .unwrap_or_default(),
             entries: source.nodes.iter().map(FromNode::from_node).collect(),
         }
@@ -34,7 +34,7 @@ impl FromNode for TableEntry {
             .atoms
             .iter()
             .find(|a| a.code == 2)
-            .and_then(|a| a.value.get())
+            .map(|a| a.value.to_string())
             .unwrap_or_default();
         let record = match &*source.node_type {
             // "APPID" => {
@@ -137,13 +137,18 @@ impl FromNode for Layer {
                 }
                 62 => {
                     // if negative, layer is off
-                    dst.color_number = atom.value.get::<i16>().filter(|&c| c >= 0).map(|c| c as u8);
+                    dst.color_number = atom
+                        .value
+                        .parse::<i16>()
+                        .ok()
+                        .filter(|&c| c >= 0)
+                        .map(|c| c as u8);
                 }
-                6 => dst.line_type = atom.value.get(),
-                290 => dst.is_plotted = atom.value.get::<i16>().unwrap_or_default() != 0,
-                370 => dst.line_weight = atom.value.get::<i16>(),
-                390 => dst.plot_style_handle = atom.value.get(),
-                347 => dst.material_handle = atom.value.get(),
+                6 => dst.line_type = atom.value.parse().ok(),
+                290 => dst.is_plotted = atom.value.parse::<i16>().unwrap_or_default() != 0,
+                370 => dst.line_weight = atom.value.parse::<i16>().ok(),
+                390 => dst.plot_style_handle = u32::from_str_radix(&atom.value, 16).ok(),
+                347 => dst.material_handle = u32::from_str_radix(&atom.value, 16).ok(),
                 _ => {}
             }
         }
@@ -163,7 +168,7 @@ impl FromNode for LineType {
                 3 => atom.value.get_to(&mut dst.description),
                 40 => atom.value.get_to(&mut dst.total_pattern_length),
                 49 => {
-                    if let Some(len) = atom.value.get() {
+                    if let Ok(len) = atom.value.parse() {
                         dst.pattern_lengths.push(len);
                         true
                     } else {

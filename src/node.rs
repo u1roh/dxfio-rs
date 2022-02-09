@@ -94,7 +94,7 @@ impl<'a> NodeParser<'a> {
                     && node
                         .atoms
                         .iter()
-                        .any(|a| a.code == 66 && a.value.get() == Some(1i16)))
+                        .any(|a| a.code == 66 && a.value.parse() == Ok(1i16)))
         }
         assert!(is_node_starting_code(self.atoms[start].code));
         let node_type = &self.atoms[start].value;

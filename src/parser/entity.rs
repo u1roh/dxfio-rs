@@ -52,9 +52,9 @@ impl SetAtom for EntityHeader {
             370 => atom.value.get_to_option(&mut self.line_weight),
             48 => atom.value.get_to_option(&mut self.line_type_scale),
             60 => {
-                self.is_visible = match atom.value.get::<i16>() {
-                    Some(0) => true,
-                    Some(1) => false,
+                self.is_visible = match atom.value.parse::<i16>() {
+                    Ok(0) => true,
+                    Ok(1) => false,
                     _ => return false,
                 };
                 true
@@ -119,13 +119,13 @@ impl SetAtom for Text {
             51 => atom.value.get_to_option(&mut self.oblique_degree),
             71 => atom.value.get_to_option(&mut self.mirror_flags),
             72 => {
-                if let Some(h) = atom.value.get() {
+                if let Ok(h) = atom.value.parse() {
                     self.alignment = match self.alignment {
                         TextAlignment::Combo(_, v) => TextAlignment::Combo(h, v),
                         _ => TextAlignment::Combo(h, TextVerticalAlignment::Baseline),
                     };
                     true
-                } else if let Some(align) = atom.value.get::<i16>().and_then(|value| {
+                } else if let Some(align) = atom.value.parse::<i16>().ok().and_then(|value| {
                     Some(match value {
                         3 => TextAlignment::Aligned,
                         4 => TextAlignment::Middle,
@@ -140,7 +140,7 @@ impl SetAtom for Text {
                 }
             }
             73 => {
-                if let Some(v) = atom.value.get() {
+                if let Ok(v) = atom.value.parse() {
                     self.alignment = match self.alignment {
                         TextAlignment::Combo(h, _) => TextAlignment::Combo(h, v),
                         _ => TextAlignment::Combo(TextHorizontalAlignment::Left, v),
@@ -198,17 +198,17 @@ impl SetAtom for MText {
             44 => atom.value.get_to_option(&mut self.line_spacing_factor),
             90 => {
                 self.background_fill_color =
-                    match (self.background_fill_color, atom.value.get::<i32>()) {
-                        (Some(MTextBackground::ColorNumber(_)), Some(1)) => return true,
-                        (_, Some(0)) => None,
-                        (_, Some(1)) => Some(MTextBackground::ColorNumber(0)),
-                        (_, Some(2)) => Some(MTextBackground::WindowColor),
+                    match (self.background_fill_color, atom.value.parse::<i32>()) {
+                        (Some(MTextBackground::ColorNumber(_)), Ok(1)) => return true,
+                        (_, Ok(0)) => None,
+                        (_, Ok(1)) => Some(MTextBackground::ColorNumber(0)),
+                        (_, Ok(2)) => Some(MTextBackground::WindowColor),
                         _ => return false,
                     };
                 true
             }
             63 => {
-                if let Some(color) = atom.value.get::<i16>() {
+                if let Ok(color) = atom.value.parse::<i16>() {
                     self.background_fill_color = Some(MTextBackground::ColorNumber(color));
                     true
                 } else {
@@ -238,7 +238,7 @@ impl SetAtom for Box<Dimension> {
 
             70 => {
                 let success1 = atom.value.get_to(&mut self.dimension_type);
-                let success2 = if let Some(flags) = atom.value.get::<i16>() {
+                let success2 = if let Ok(flags) = atom.value.parse::<i16>() {
                     self.dimension_flags
                         .block_is_referenced_by_this_dimension_only = flags & 0b100000 != 0;
                     self.dimension_flags
@@ -427,7 +427,7 @@ impl SetAtom for LwPolylineBuilder {
             }
 
             70 => {
-                if let Some(flags) = value.get::<i16>() {
+                if let Ok(flags) = value.parse::<i16>() {
                     self.target.is_closed = (flags & 0b00000001) != 0;
                     self.target.is_continuous_pattern = (flags & 0b10000000) != 0;
                     true
