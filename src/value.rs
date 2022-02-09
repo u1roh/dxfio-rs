@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Value<'a>(pub Cow<'a, str>);
@@ -10,20 +9,6 @@ impl<'a> std::ops::Deref for Value<'a> {
     }
 }
 impl<'a> Value<'a> {
-    pub fn and_then_to<T: FromStr, U>(&'a self, dst: &mut U, f: impl Fn(T) -> Option<U>) -> bool {
-        if let Some(x) = self.parse().ok().and_then(f) {
-            *dst = x;
-            true
-        } else {
-            log::error!(
-                "Value::and_then_to::<{}>({:?}, dst: &mut {}) failed",
-                std::any::type_name::<T>(),
-                self,
-                std::any::type_name::<U>(),
-            );
-            false
-        }
-    }
     pub fn as_handle(&self) -> Option<u32> {
         u32::from_str_radix(&self.0, 16).ok()
     }

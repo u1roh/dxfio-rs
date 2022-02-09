@@ -106,15 +106,21 @@ impl FromNode for DimStyle {
                 72 => super::parse_to(&atom.value, &mut dst.dimension_limits),
                 73 => super::parse_to(&atom.value, &mut dst.text_inside_horizontal),
                 74 => super::parse_to(&atom.value, &mut dst.text_outside_horizontal),
-                75 => atom
-                    .value
-                    .and_then_to(&mut dst.extension_line1_suppressed, int2bool),
-                76 => atom
-                    .value
-                    .and_then_to(&mut dst.extension_line2_suppressed, int2bool),
-                77 => atom
-                    .value
-                    .and_then_to(&mut dst.text_above_dimension_line, int2bool),
+                75 => super::parse_and_then_to(
+                    &atom.value,
+                    &mut dst.extension_line1_suppressed,
+                    int2bool,
+                ),
+                76 => super::parse_and_then_to(
+                    &atom.value,
+                    &mut dst.extension_line2_suppressed,
+                    int2bool,
+                ),
+                77 => super::parse_and_then_to(
+                    &atom.value,
+                    &mut dst.text_above_dimension_line,
+                    int2bool,
+                ),
                 _ => false,
             };
         }
@@ -132,8 +138,7 @@ impl FromNode for Layer {
         for atom in source.atoms.iter() {
             match atom.code {
                 70 => {
-                    atom.value
-                        .and_then_to(&mut dst.flags, |x: i16| Some(x as _));
+                    super::parse_and_then_to(&atom.value, &mut dst.flags, |x: i16| Some(x as _));
                 }
                 62 => {
                     // if negative, layer is off
@@ -162,9 +167,9 @@ impl FromNode for LineType {
         let mut dst = LineType::default();
         for atom in source.atoms.iter() {
             let _ = match atom.code {
-                70 => atom
-                    .value
-                    .and_then_to(&mut dst.flags, |x: i16| Some(x as u16)),
+                70 => {
+                    super::parse_and_then_to(&atom.value, &mut dst.flags, |x: i16| Some(x as u16))
+                }
                 3 => super::parse_to(&atom.value, &mut dst.description),
                 40 => super::parse_to(&atom.value, &mut dst.total_pattern_length),
                 49 => {

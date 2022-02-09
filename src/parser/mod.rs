@@ -127,3 +127,22 @@ fn parse_to_option<T: std::str::FromStr>(s: &str, dst: &mut Option<T>) -> bool {
         false
     }
 }
+
+fn parse_and_then_to<T: std::str::FromStr, U>(
+    s: &str,
+    dst: &mut U,
+    f: impl Fn(T) -> Option<U>,
+) -> bool {
+    if let Some(x) = s.parse().ok().and_then(f) {
+        *dst = x;
+        true
+    } else {
+        log::error!(
+            "parse_and_then_to::<{}>({:?}, dst: &mut {}) failed",
+            std::any::type_name::<T>(),
+            s,
+            std::any::type_name::<U>(),
+        );
+        false
+    }
+}
