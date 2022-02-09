@@ -112,3 +112,18 @@ fn parse_to<T: std::str::FromStr>(s: &str, dst: &mut T) -> bool {
         false
     }
 }
+
+fn parse_to_option<T: std::str::FromStr>(s: &str, dst: &mut Option<T>) -> bool {
+    if let Ok(x) = s.parse() {
+        *dst = Some(x);
+        true
+    } else {
+        log::error!(
+            "parse_to_option({:?}, dst: &mut {}) failed",
+            s,
+            std::any::type_name::<T>(),
+        );
+        *dst = None;
+        false
+    }
+}

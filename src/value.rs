@@ -10,20 +10,6 @@ impl<'a> std::ops::Deref for Value<'a> {
     }
 }
 impl<'a> Value<'a> {
-    pub fn get_to_option<T: FromStr>(&'a self, dst: &mut Option<T>) -> bool {
-        if let Ok(x) = self.parse() {
-            *dst = Some(x);
-            true
-        } else {
-            log::error!(
-                "Value::get_to_option({:?}, dst: &mut {}) failed",
-                self,
-                std::any::type_name::<T>(),
-            );
-            *dst = None;
-            false
-        }
-    }
     pub fn and_then_to<T: FromStr, U>(&'a self, dst: &mut U, f: impl Fn(T) -> Option<U>) -> bool {
         if let Some(x) = self.parse().ok().and_then(f) {
             *dst = x;

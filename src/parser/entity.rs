@@ -49,8 +49,8 @@ impl SetAtom for EntityHeader {
             8 => super::parse_to(&atom.value, &mut self.layer),
             6 => super::parse_to(&atom.value, &mut self.line_type),
             62 => super::parse_to(&atom.value, &mut self.color_number),
-            370 => atom.value.get_to_option(&mut self.line_weight),
-            48 => atom.value.get_to_option(&mut self.line_type_scale),
+            370 => super::parse_to_option(&atom.value, &mut self.line_weight),
+            48 => super::parse_to_option(&atom.value, &mut self.line_type_scale),
             60 => {
                 self.is_visible = match atom.value.parse::<i16>() {
                     Ok(0) => true,
@@ -59,10 +59,10 @@ impl SetAtom for EntityHeader {
                 };
                 true
             }
-            420 => atom.value.get_to_option(&mut self.color_rgb),
-            430 => atom.value.get_to_option(&mut self.color_name),
-            440 => atom.value.get_to_option(&mut self.transparency),
-            284 => atom.value.get_to_option(&mut self.shadow_mode),
+            420 => super::parse_to_option(&atom.value, &mut self.color_rgb),
+            430 => super::parse_to_option(&atom.value, &mut self.color_name),
+            440 => super::parse_to_option(&atom.value, &mut self.transparency),
+            284 => super::parse_to_option(&atom.value, &mut self.shadow_mode),
             _ => false,
         }
     }
@@ -105,19 +105,19 @@ impl SetAtom for Text {
                 self.text = super::text_format::parse_control_codes(&atom.value);
                 true
             }
-            7 => atom.value.get_to_option(&mut self.style_name),
+            7 => super::parse_to_option(&atom.value, &mut self.style_name),
             10 => super::parse_to(&atom.value, &mut self.point1[0]),
             20 => super::parse_to(&atom.value, &mut self.point1[1]),
             30 => super::parse_to(&atom.value, &mut self.point1[2]),
             11 => super::parse_to(&atom.value, &mut self.point2[0]),
             21 => super::parse_to(&atom.value, &mut self.point2[1]),
             31 => super::parse_to(&atom.value, &mut self.point2[2]),
-            39 => atom.value.get_to_option(&mut self.thickness),
+            39 => super::parse_to_option(&atom.value, &mut self.thickness),
             40 => super::parse_to(&atom.value, &mut self.height),
-            41 => atom.value.get_to_option(&mut self.relative_x_scale_factor),
-            50 => atom.value.get_to_option(&mut self.rotation_degree),
-            51 => atom.value.get_to_option(&mut self.oblique_degree),
-            71 => atom.value.get_to_option(&mut self.mirror_flags),
+            41 => super::parse_to_option(&atom.value, &mut self.relative_x_scale_factor),
+            50 => super::parse_to_option(&atom.value, &mut self.rotation_degree),
+            51 => super::parse_to_option(&atom.value, &mut self.oblique_degree),
+            71 => super::parse_to_option(&atom.value, &mut self.mirror_flags),
             72 => {
                 if let Ok(h) = atom.value.parse() {
                     self.alignment = match self.alignment {
@@ -171,7 +171,7 @@ impl SetAtom for MText {
                 self.text.raw += &atom.value;
                 true
             }
-            7 => atom.value.get_to_option(&mut self.style_name),
+            7 => super::parse_to_option(&atom.value, &mut self.style_name),
             10 => super::parse_to(&atom.value, &mut self.point[0]),
             20 => super::parse_to(&atom.value, &mut self.point[1]),
             30 => super::parse_to(&atom.value, &mut self.point[2]),
@@ -182,7 +182,7 @@ impl SetAtom for MText {
             41 => super::parse_to(&atom.value, &mut self.rectangle_width),
             42 => super::parse_to(&atom.value, &mut self.character_width),
             43 => super::parse_to(&atom.value, &mut self.character_height),
-            50 => atom.value.get_to_option(&mut self.rotation_radian),
+            50 => super::parse_to_option(&atom.value, &mut self.rotation_radian),
             210 => atom
                 .value
                 .get_optional_coord_to(0, &mut self.extrusion_vector),
@@ -195,7 +195,7 @@ impl SetAtom for MText {
             71 => super::parse_to(&atom.value, &mut self.attachment_point),
             72 => super::parse_to(&atom.value, &mut self.drawing_direction),
             73 => super::parse_to(&atom.value, &mut self.line_spacing_style),
-            44 => atom.value.get_to_option(&mut self.line_spacing_factor),
+            44 => super::parse_to_option(&atom.value, &mut self.line_spacing_factor),
             90 => {
                 self.background_fill_color =
                     match (self.background_fill_color, atom.value.parse::<i32>()) {
@@ -215,7 +215,7 @@ impl SetAtom for MText {
                     false
                 }
             }
-            45 => atom.value.get_to_option(&mut self.fill_box_scale),
+            45 => super::parse_to_option(&atom.value, &mut self.fill_box_scale),
             _ => false,
         }
     }
@@ -252,13 +252,11 @@ impl SetAtom for Box<Dimension> {
             }
             71 => super::parse_to(&atom.value, &mut self.attachment_point),
             72 => super::parse_to(&atom.value, &mut self.text_line_spacing_style),
-            41 => atom.value.get_to_option(&mut self.text_line_spacing_factor),
-            42 => atom.value.get_to_option(&mut self.actual_measurement),
-            1 => atom.value.get_to_option(&mut self.text),
-            53 => atom.value.get_to_option(&mut self.text_rotation_angle),
-            51 => atom
-                .value
-                .get_to_option(&mut self.horizontal_direction_angle),
+            41 => super::parse_to_option(&atom.value, &mut self.text_line_spacing_factor),
+            42 => super::parse_to_option(&atom.value, &mut self.actual_measurement),
+            1 => super::parse_to_option(&atom.value, &mut self.text),
+            53 => super::parse_to_option(&atom.value, &mut self.text_rotation_angle),
+            51 => super::parse_to_option(&atom.value, &mut self.horizontal_direction_angle),
 
             210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
@@ -286,9 +284,9 @@ impl SetAtom for Box<Dimension> {
             26 => value.get_optional_coord_to(1, &mut self.arc_location),
             36 => value.get_optional_coord_to(2, &mut self.arc_location),
 
-            50 => value.get_to_option(&mut self.rotation_angle),
-            52 => value.get_to_option(&mut self.oblique_angle),
-            40 => value.get_to_option(&mut self.leader_length),
+            50 => super::parse_to_option(value, &mut self.rotation_angle),
+            52 => super::parse_to_option(value, &mut self.oblique_angle),
+            40 => super::parse_to_option(value, &mut self.leader_length),
 
             _ => {
                 log::info!("unhandled atom: {:?}", atom);
@@ -309,7 +307,7 @@ impl SetAtom for Point {
             210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
-            50 => value.get_to_option(&mut self.x_axis_degree),
+            50 => super::parse_to_option(value, &mut self.x_axis_degree),
             _ => false,
         }
     }
@@ -415,15 +413,15 @@ impl SetAtom for LwPolylineBuilder {
             }
             40 => {
                 self.flags.start_width = true;
-                value.get_to_option(&mut self.vertex.start_width)
+                super::parse_to_option(value, &mut self.vertex.start_width)
             }
             41 => {
                 self.flags.end_width = true;
-                value.get_to_option(&mut self.vertex.end_width)
+                super::parse_to_option(value, &mut self.vertex.end_width)
             }
             42 => {
                 self.flags.bulge = true;
-                value.get_to_option(&mut self.vertex.bulge)
+                super::parse_to_option(value, &mut self.vertex.bulge)
             }
 
             70 => {
@@ -435,9 +433,9 @@ impl SetAtom for LwPolylineBuilder {
                     false
                 }
             }
-            43 => value.get_to_option(&mut self.target.constant_width),
-            38 => value.get_to_option(&mut self.target.elevation),
-            39 => value.get_to_option(&mut self.target.thickness),
+            43 => super::parse_to_option(value, &mut self.target.constant_width),
+            38 => super::parse_to_option(value, &mut self.target.elevation),
+            39 => super::parse_to_option(value, &mut self.target.thickness),
             210 => value.get_optional_coord_to(0, &mut self.target.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.target.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.target.extrusion_direction),
