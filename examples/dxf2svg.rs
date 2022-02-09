@@ -186,14 +186,23 @@ fn draw_dimension(
 
 fn draw_text(
     svg: svg::Document,
-    text: &dxfio::Text,
+    src: &dxfio::Text,
     transform: impl Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
-    let p = transform(&text.point1);
+    let scale = (transform(&[1.0, 0.0, 0.0])[0] - transform(&[0.0, 0.0, 0.0])[0]).abs();
+    // println!("draw_text(): scale = {}", scale);
+    let p = transform(&src.point1);
     let text = svg::node::element::Text::new()
         .set("x", p[0])
         .set("y", p[1])
-        .add(svg::node::Text::new(text.text.clone()));
+        .set("font-size", scale * src.height)
+        .add(svg::node::Text::new(src.text.clone()));
+    let text = if let Some(deg) = src.rotation_degree {
+        println!("draw_text(): rotation_degree = {}", deg);
+        text.set("transform", format!("rotate({} {} {})", -deg, p[0], p[1]))
+    } else {
+        text
+    };
     svg.add(text)
 }
 
@@ -202,6 +211,8 @@ fn draw_mtext(
     mtext: &dxfio::MText,
     transform: impl Fn(&[f64; 3]) -> [f64; 3],
 ) -> svg::Document {
+    let scale = (transform(&[1.0, 0.0, 0.0])[0] - transform(&[0.0, 0.0, 0.0])[0]).abs();
+    // println!("draw_mtext(): scale = {}", scale);
     log::info!("mtext.x_axis = {:?}", mtext.x_axis);
     log::info!("mtext.rotation_radian = {:?}", mtext.rotation_radian);
     log::info!("mtext.rectangle_width = {}", mtext.rectangle_width);
@@ -221,7 +232,15 @@ fn draw_mtext(
         let text = svg::node::element::Text::new()
             .set("x", p[0])
             .set("y", p[1])
+            .set("font-size", scale * mtext.height)
             .add(svg::node::Text::new(text));
+        let text = if let Some([x, y, _]) = mtext.x_axis {
+            let deg = y.atan2(x) * 180.0 / std::f64::consts::PI;
+            println!("draw_mtext(): deg = {}", deg);
+            text.set("transform", format!("rotate({} {} {})", -deg, p[0], p[1]))
+        } else {
+            text
+        };
         svg.add(text)
     };
     svg = {
