@@ -8,10 +8,10 @@ pub struct Atom<'a> {
 }
 
 impl<'a> Atom<'a> {
-    pub fn to_owned(&self) -> Atom<'static> {
+    pub fn into_owned(self) -> Atom<'static> {
         Atom {
             code: self.code,
-            value: Cow::Owned(self.value.clone().into_owned()),
+            value: Cow::Owned(self.value.into_owned()),
         }
     }
 

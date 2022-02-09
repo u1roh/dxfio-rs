@@ -31,7 +31,7 @@ impl<'a> Node<'a> {
     pub fn to_owned(&self) -> Node<'static> {
         Node {
             node_type: Cow::Owned(self.node_type.clone().into_owned()),
-            atoms: Cow::Owned(self.atoms.iter().map(|a| a.to_owned()).collect()),
+            atoms: Cow::Owned(self.atoms.iter().map(|a| a.clone().into_owned()).collect()),
             nodes: self.nodes.iter().map(|n| n.to_owned()).collect(),
             end: self.end.as_ref().map(|n| Box::new(Self::to_owned(&*n))),
         }

@@ -28,24 +28,25 @@ pub enum ParseError {
         source_str: String,
         target_type: &'static str,
     },
+
+    #[error("value of group-code {code} not found")]
+    ValueNotFound { code: i16 },
 }
 
 pub type ParseResult<T> = Result<T, ParseError>;
 
 pub trait AtomList {
     fn find(&self, code: i16) -> Option<&str>;
-    fn get_value<'a, T: std::str::FromStr>(&'a self, code: i16) -> Option<T> {
-        self.find(code)?.parse().ok()
-    }
-    fn get_or_default<'a, T: std::str::FromStr + Default>(&'a self, code: i16) -> T {
-        self.get_value(code).unwrap_or_default()
+    fn get(&self, code: i16) -> ParseResult<&str> {
+        self.find(code).ok_or(ParseError::ValueNotFound { code })
     }
     fn get_point(&self, i: usize) -> [f64; 3] {
-        [
-            self.get_or_default(10 + i as i16),
-            self.get_or_default(20 + i as i16),
-            self.get_or_default(30 + i as i16),
-        ]
+        let get = |code| {
+            self.find(code)
+                .and_then(|s| s.parse::<f64>().ok())
+                .unwrap_or_default()
+        };
+        [get(10 + i as i16), get(20 + i as i16), get(30 + i as i16)]
     }
 }
 

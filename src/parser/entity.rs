@@ -35,7 +35,7 @@ impl<T: SetAtom> SetAtom for (EntityHeader, T) {
         if SetAtom::set_atom(&mut self.0, atom) || self.1.set_atom(atom) {
             true
         } else {
-            self.0.extras.push(atom.to_owned());
+            self.0.extras.push(atom.clone().into_owned());
             false
         }
     }
@@ -77,7 +77,7 @@ impl SetAtom for EntityHeader {
 
 impl<'a> SetAtom for Vec<Atom<'static>> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
-        self.push(atom.to_owned());
+        self.push(atom.clone().into_owned());
         true
     }
 }
