@@ -25,16 +25,22 @@ pub enum ParseError {
 
     #[error(transparent)]
     IoError(#[from] std::io::Error),
+
+    #[error("failed to parse \"{source_str}\" to `{target_type}`")]
+    ParseValueError {
+        source_str: String,
+        target_type: &'static str,
+    },
 }
 
 pub type ParseResult<T> = Result<T, ParseError>;
 
 pub trait AtomList {
-    fn find(&self, code: i16) -> Option<&Value>;
-    fn get_value<'a, T: value::FromValue<'a>>(&'a self, code: i16) -> Option<T> {
-        self.find(code)?.get()
+    fn find(&self, code: i16) -> Option<&str>;
+    fn get_value<'a, T: std::str::FromStr>(&'a self, code: i16) -> Option<T> {
+        self.find(code)?.parse().ok()
     }
-    fn get_or_default<'a, T: value::FromValue<'a> + Default>(&'a self, code: i16) -> T {
+    fn get_or_default<'a, T: std::str::FromStr + Default>(&'a self, code: i16) -> T {
         self.get_value(code).unwrap_or_default()
     }
     fn get_point(&self, i: usize) -> [f64; 3] {
@@ -47,15 +53,15 @@ pub trait AtomList {
 }
 
 impl<'a> AtomList for [Atom<'a>] {
-    fn find(&self, code: i16) -> Option<&Value> {
+    fn find(&self, code: i16) -> Option<&str> {
         self.iter()
             .find(|item| item.code == code)
-            .map(|item| &item.value)
+            .map(|item| &item.value as &str)
     }
 }
 
 impl<'a> AtomList for std::borrow::Cow<'a, [Atom<'a>]> {
-    fn find(&self, code: i16) -> Option<&Value> {
+    fn find(&self, code: i16) -> Option<&str> {
         (**self).find(code)
     }
 }

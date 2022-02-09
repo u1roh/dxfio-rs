@@ -27,7 +27,7 @@ impl FromNode for TableEntry {
             source
                 .atoms
                 .find(code)
-                .and_then(|value| value.as_handle())
+                .and_then(|s| u32::from_str_radix(s, 16).ok())
                 .unwrap_or_default()
         };
         let name = source

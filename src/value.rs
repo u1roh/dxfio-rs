@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Value<'a>(pub Cow<'a, str>);
@@ -9,10 +10,10 @@ impl<'a> std::ops::Deref for Value<'a> {
     }
 }
 impl<'a> Value<'a> {
-    pub fn get<T: FromValue<'a>>(&'a self) -> Option<T> {
-        T::from_value(self)
+    pub fn get<T: FromStr>(&'a self) -> Option<T> {
+        T::from_str(self).ok()
     }
-    pub fn get_to<T: FromValue<'a>>(&'a self, dst: &mut T) -> bool {
+    pub fn get_to<T: FromStr>(&'a self, dst: &mut T) -> bool {
         if let Some(x) = self.get() {
             *dst = x;
             true
@@ -25,11 +26,21 @@ impl<'a> Value<'a> {
             false
         }
     }
-    pub fn and_then_to<T: FromValue<'a>, U>(
-        &'a self,
-        dst: &mut U,
-        f: impl Fn(T) -> Option<U>,
-    ) -> bool {
+    pub fn get_to_option<T: FromStr>(&'a self, dst: &mut Option<T>) -> bool {
+        if let Some(x) = self.get() {
+            *dst = Some(x);
+            true
+        } else {
+            log::error!(
+                "Value::get_to({:?}, dst: &mut {}) failed",
+                self,
+                std::any::type_name::<T>(),
+            );
+            *dst = None;
+            false
+        }
+    }
+    pub fn and_then_to<T: FromStr, U>(&'a self, dst: &mut U, f: impl Fn(T) -> Option<U>) -> bool {
         if let Some(x) = self.get().and_then(f) {
             *dst = x;
             true
@@ -76,56 +87,5 @@ impl<'a> Value<'a> {
 impl<'a> std::fmt::Display for Value<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
-    }
-}
-
-pub trait FromValue<'a>: Sized {
-    fn from_value(value: &'a Value<'a>) -> Option<Self>;
-}
-
-impl<'a, T: FromValue<'a>> FromValue<'a> for Option<T> {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        Some(T::from_value(value))
-    }
-}
-
-impl<'a> FromValue<'a> for &'a str {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        Some(&value.0)
-    }
-}
-impl<'a> FromValue<'a> for String {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        Some(value.to_string())
-    }
-}
-impl<'a> FromValue<'a> for f64 {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
-    }
-}
-impl<'a> FromValue<'a> for i64 {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
-    }
-}
-impl<'a> FromValue<'a> for i32 {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
-    }
-}
-impl<'a> FromValue<'a> for i16 {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
-    }
-}
-impl<'a> FromValue<'a> for u32 {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
-    }
-}
-impl<'a> FromValue<'a> for usize {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.parse().ok()
     }
 }

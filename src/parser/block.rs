@@ -34,9 +34,10 @@ impl super::FromNode for BlockNode {
     }
 }
 
-impl<'a> crate::value::FromValue<'a> for BlockFlags {
-    fn from_value(value: &'a Value<'a>) -> Option<Self> {
-        value.get::<i16>().map(|flags| Self {
+impl std::str::FromStr for BlockFlags {
+    type Err = <i16 as std::str::FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.parse::<i16>().map(|flags| Self {
             is_anonymous: (flags & 0b0000_0001) != 0,
             has_non_constant_attribute_definitions: (flags & 0b0000_0010) != 0,
             is_xref: (flags & 0b0000_0100) != 0,

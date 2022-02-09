@@ -16,7 +16,7 @@ impl Document {
             entities: Vec::new(),
         };
         for section in nodes {
-            match section.atoms.get_value(2) {
+            match section.atoms.find(2) {
                 Some("HEADER") => {
                     drawing.headers = section.nodes.iter().map(Node::to_owned).collect();
                 }
