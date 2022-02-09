@@ -31,7 +31,7 @@ impl<'a> Node<'a> {
     pub fn to_owned(&self) -> Node<'static> {
         Node {
             node_type: Cow::Owned(self.node_type.clone().into_owned()),
-            atoms: Cow::Owned(self.atoms.iter().map(|a| a.to_owned()).collect()),
+            atoms: Cow::Owned(self.atoms.iter().map(|a| a.clone().into_owned()).collect()),
             nodes: self.nodes.iter().map(|n| n.to_owned()).collect(),
             end: self.end.as_ref().map(|n| Box::new(Self::to_owned(&*n))),
         }
@@ -43,7 +43,7 @@ impl<'a> Node<'a> {
         Box::new(
             std::iter::once(Atom {
                 code: 0,
-                value: crate::Value::String(self.node_type.clone()),
+                value: self.node_type.clone(),
             })
             .chain(self.atoms.iter().cloned())
             .chain(self.nodes.iter().flat_map(Self::iter_atoms))
@@ -76,7 +76,7 @@ impl<'a> NodeParser<'a> {
             start = end;
             nodes.push(node);
         }
-        if self.atoms[start].value.get() == Some("EOF") {
+        if &self.atoms[start].value as &str == "EOF" {
             let eof = Node {
                 node_type: Cow::Borrowed("EOF"),
                 ..Default::default()
@@ -94,10 +94,10 @@ impl<'a> NodeParser<'a> {
                     && node
                         .atoms
                         .iter()
-                        .any(|a| a.code == 66 && a.value.get() == Some(1i16)))
+                        .any(|a| a.code == 66 && a.value.parse() == Ok(1i16)))
         }
         assert!(is_node_starting_code(self.atoms[start].code));
-        let node_type = self.atoms[start].value.get().unwrap_or_default();
+        let node_type = &self.atoms[start].value;
         let (mut node, mut pos) = self.parse_element(node_type, start + 1)?;
         if is_container_type(&node) {
             let (nodes, end_node, end_pos) = self.parse_nodes(pos)?;

@@ -16,7 +16,7 @@ impl Document {
             entities: Vec::new(),
         };
         for section in nodes {
-            match section.atoms.get_value(2) {
+            match section.atoms.find(2) {
                 Some("HEADER") => {
                     drawing.headers = section.nodes.iter().map(Node::to_owned).collect();
                 }
@@ -96,5 +96,68 @@ impl<T: SetAtom> FromNode for T {
         }
         dst.add_nodes(&source.nodes);
         dst
+    }
+}
+
+fn parse_to<T: std::str::FromStr>(s: &str, dst: &mut T) -> bool {
+    if let Ok(x) = s.parse() {
+        *dst = x;
+        true
+    } else {
+        log::error!(
+            "parse_to({:?}, dst: &mut {}) failed",
+            s,
+            std::any::type_name::<T>(),
+        );
+        false
+    }
+}
+
+fn parse_to_option<T: std::str::FromStr>(s: &str, dst: &mut Option<T>) -> bool {
+    if let Ok(x) = s.parse() {
+        *dst = Some(x);
+        true
+    } else {
+        log::error!(
+            "parse_to_option({:?}, dst: &mut {}) failed",
+            s,
+            std::any::type_name::<T>(),
+        );
+        *dst = None;
+        false
+    }
+}
+
+fn parse_and_then_to<T: std::str::FromStr, U>(
+    s: &str,
+    dst: &mut U,
+    f: impl Fn(T) -> Option<U>,
+) -> bool {
+    if let Some(x) = s.parse().ok().and_then(f) {
+        *dst = x;
+        true
+    } else {
+        log::error!(
+            "parse_and_then_to::<{}>({:?}, dst: &mut {}) failed",
+            std::any::type_name::<T>(),
+            s,
+            std::any::type_name::<U>(),
+        );
+        false
+    }
+}
+
+fn parse_optional_coord_to(s: &str, i: usize, dst: &mut Option<[f64; 3]>) -> bool {
+    if let Ok(x) = s.parse() {
+        if let Some(dst) = dst {
+            dst[i] = x;
+        } else {
+            let mut coord = [0.0, 0.0, 0.0];
+            coord[i] = x;
+            *dst = Some(coord);
+        }
+        true
+    } else {
+        false
     }
 }
