@@ -98,3 +98,17 @@ impl<T: SetAtom> FromNode for T {
         dst
     }
 }
+
+fn parse_to<T: std::str::FromStr>(s: &str, dst: &mut T) -> bool {
+    if let Ok(x) = s.parse() {
+        *dst = x;
+        true
+    } else {
+        log::error!(
+            "parse_to({:?}, dst: &mut {}) failed",
+            s,
+            std::any::type_name::<T>(),
+        );
+        false
+    }
+}

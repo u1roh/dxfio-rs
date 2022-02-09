@@ -45,10 +45,10 @@ impl SetAtom for EntityHeader {
     fn set_atom(&mut self, atom: &super::Atom) -> bool {
         match atom.code {
             5 => atom.value.as_handle_to(&mut self.handle),
-            67 => atom.value.get_to(&mut self.space),
-            8 => atom.value.get_to(&mut self.layer),
-            6 => atom.value.get_to(&mut self.line_type),
-            62 => atom.value.get_to(&mut self.color_number),
+            67 => super::parse_to(&atom.value, &mut self.space),
+            8 => super::parse_to(&atom.value, &mut self.layer),
+            6 => super::parse_to(&atom.value, &mut self.line_type),
+            62 => super::parse_to(&atom.value, &mut self.color_number),
             370 => atom.value.get_to_option(&mut self.line_weight),
             48 => atom.value.get_to_option(&mut self.line_type_scale),
             60 => {
@@ -78,21 +78,21 @@ impl<'a> SetAtom for Vec<Atom<'static>> {
 impl SetAtom for Insert {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         match atom.code {
-            2 => atom.value.get_to(&mut self.block_name),
-            10 => atom.value.get_to(&mut self.insertion_point[0]),
-            20 => atom.value.get_to(&mut self.insertion_point[1]),
-            30 => atom.value.get_to(&mut self.insertion_point[2]),
-            41 => atom.value.get_to(&mut self.scale_factor[0]),
-            42 => atom.value.get_to(&mut self.scale_factor[1]),
-            43 => atom.value.get_to(&mut self.scale_factor[2]),
-            50 => atom.value.get_to(&mut self.rotation_degree),
-            70 => atom.value.get_to(&mut self.column_count),
-            71 => atom.value.get_to(&mut self.row_count),
-            44 => atom.value.get_to(&mut self.column_spacing),
-            45 => atom.value.get_to(&mut self.row_spacing),
-            210 => atom.value.get_to(&mut self.extrusion_direction[0]),
-            220 => atom.value.get_to(&mut self.extrusion_direction[1]),
-            230 => atom.value.get_to(&mut self.extrusion_direction[2]),
+            2 => super::parse_to(&atom.value, &mut self.block_name),
+            10 => super::parse_to(&atom.value, &mut self.insertion_point[0]),
+            20 => super::parse_to(&atom.value, &mut self.insertion_point[1]),
+            30 => super::parse_to(&atom.value, &mut self.insertion_point[2]),
+            41 => super::parse_to(&atom.value, &mut self.scale_factor[0]),
+            42 => super::parse_to(&atom.value, &mut self.scale_factor[1]),
+            43 => super::parse_to(&atom.value, &mut self.scale_factor[2]),
+            50 => super::parse_to(&atom.value, &mut self.rotation_degree),
+            70 => super::parse_to(&atom.value, &mut self.column_count),
+            71 => super::parse_to(&atom.value, &mut self.row_count),
+            44 => super::parse_to(&atom.value, &mut self.column_spacing),
+            45 => super::parse_to(&atom.value, &mut self.row_spacing),
+            210 => super::parse_to(&atom.value, &mut self.extrusion_direction[0]),
+            220 => super::parse_to(&atom.value, &mut self.extrusion_direction[1]),
+            230 => super::parse_to(&atom.value, &mut self.extrusion_direction[2]),
             _ => false,
         }
     }
@@ -106,14 +106,14 @@ impl SetAtom for Text {
                 true
             }
             7 => atom.value.get_to_option(&mut self.style_name),
-            10 => atom.value.get_to(&mut self.point1[0]),
-            20 => atom.value.get_to(&mut self.point1[1]),
-            30 => atom.value.get_to(&mut self.point1[2]),
-            11 => atom.value.get_to(&mut self.point2[0]),
-            21 => atom.value.get_to(&mut self.point2[1]),
-            31 => atom.value.get_to(&mut self.point2[2]),
+            10 => super::parse_to(&atom.value, &mut self.point1[0]),
+            20 => super::parse_to(&atom.value, &mut self.point1[1]),
+            30 => super::parse_to(&atom.value, &mut self.point1[2]),
+            11 => super::parse_to(&atom.value, &mut self.point2[0]),
+            21 => super::parse_to(&atom.value, &mut self.point2[1]),
+            31 => super::parse_to(&atom.value, &mut self.point2[2]),
             39 => atom.value.get_to_option(&mut self.thickness),
-            40 => atom.value.get_to(&mut self.height),
+            40 => super::parse_to(&atom.value, &mut self.height),
             41 => atom.value.get_to_option(&mut self.relative_x_scale_factor),
             50 => atom.value.get_to_option(&mut self.rotation_degree),
             51 => atom.value.get_to_option(&mut self.oblique_degree),
@@ -172,16 +172,16 @@ impl SetAtom for MText {
                 true
             }
             7 => atom.value.get_to_option(&mut self.style_name),
-            10 => atom.value.get_to(&mut self.point[0]),
-            20 => atom.value.get_to(&mut self.point[1]),
-            30 => atom.value.get_to(&mut self.point[2]),
+            10 => super::parse_to(&atom.value, &mut self.point[0]),
+            20 => super::parse_to(&atom.value, &mut self.point[1]),
+            30 => super::parse_to(&atom.value, &mut self.point[2]),
             11 => atom.value.get_optional_coord_to(0, &mut self.x_axis),
             21 => atom.value.get_optional_coord_to(1, &mut self.x_axis),
             31 => atom.value.get_optional_coord_to(2, &mut self.x_axis),
-            40 => atom.value.get_to(&mut self.height),
-            41 => atom.value.get_to(&mut self.rectangle_width),
-            42 => atom.value.get_to(&mut self.character_width),
-            43 => atom.value.get_to(&mut self.character_height),
+            40 => super::parse_to(&atom.value, &mut self.height),
+            41 => super::parse_to(&atom.value, &mut self.rectangle_width),
+            42 => super::parse_to(&atom.value, &mut self.character_width),
+            43 => super::parse_to(&atom.value, &mut self.character_height),
             50 => atom.value.get_to_option(&mut self.rotation_radian),
             210 => atom
                 .value
@@ -192,9 +192,9 @@ impl SetAtom for MText {
             230 => atom
                 .value
                 .get_optional_coord_to(2, &mut self.extrusion_vector),
-            71 => atom.value.get_to(&mut self.attachment_point),
-            72 => atom.value.get_to(&mut self.drawing_direction),
-            73 => atom.value.get_to(&mut self.line_spacing_style),
+            71 => super::parse_to(&atom.value, &mut self.attachment_point),
+            72 => super::parse_to(&atom.value, &mut self.drawing_direction),
+            73 => super::parse_to(&atom.value, &mut self.line_spacing_style),
             44 => atom.value.get_to_option(&mut self.line_spacing_factor),
             90 => {
                 self.background_fill_color =
@@ -225,19 +225,19 @@ impl SetAtom for Box<Dimension> {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         let value = &atom.value;
         match atom.code {
-            280 => atom.value.get_to(&mut self.version),
-            2 => atom.value.get_to(&mut self.block_name),
+            280 => super::parse_to(&atom.value, &mut self.version),
+            2 => super::parse_to(&atom.value, &mut self.block_name),
 
-            10 => atom.value.get_to(&mut self.definition_point[0]),
-            20 => atom.value.get_to(&mut self.definition_point[1]),
-            30 => atom.value.get_to(&mut self.definition_point[2]),
+            10 => super::parse_to(&atom.value, &mut self.definition_point[0]),
+            20 => super::parse_to(&atom.value, &mut self.definition_point[1]),
+            30 => super::parse_to(&atom.value, &mut self.definition_point[2]),
 
-            11 => atom.value.get_to(&mut self.text_mid_point[0]),
-            21 => atom.value.get_to(&mut self.text_mid_point[1]),
-            31 => atom.value.get_to(&mut self.text_mid_point[2]),
+            11 => super::parse_to(&atom.value, &mut self.text_mid_point[0]),
+            21 => super::parse_to(&atom.value, &mut self.text_mid_point[1]),
+            31 => super::parse_to(&atom.value, &mut self.text_mid_point[2]),
 
             70 => {
-                let success1 = atom.value.get_to(&mut self.dimension_type);
+                let success1 = super::parse_to(&atom.value, &mut self.dimension_type);
                 let success2 = if let Ok(flags) = atom.value.parse::<i16>() {
                     self.dimension_flags
                         .block_is_referenced_by_this_dimension_only = flags & 0b100000 != 0;
@@ -250,8 +250,8 @@ impl SetAtom for Box<Dimension> {
                 };
                 success1 && success2
             }
-            71 => atom.value.get_to(&mut self.attachment_point),
-            72 => atom.value.get_to(&mut self.text_line_spacing_style),
+            71 => super::parse_to(&atom.value, &mut self.attachment_point),
+            72 => super::parse_to(&atom.value, &mut self.text_line_spacing_style),
             41 => atom.value.get_to_option(&mut self.text_line_spacing_factor),
             42 => atom.value.get_to_option(&mut self.actual_measurement),
             1 => atom.value.get_to_option(&mut self.text),
@@ -264,7 +264,7 @@ impl SetAtom for Box<Dimension> {
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
 
-            3 => value.get_to(&mut self.dimension_style),
+            3 => super::parse_to(value, &mut self.dimension_style),
 
             13 => value.get_optional_coord_to(0, &mut self.definition_point2),
             23 => value.get_optional_coord_to(1, &mut self.definition_point2),
@@ -302,10 +302,10 @@ impl SetAtom for Point {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         let value = &atom.value;
         match atom.code {
-            10 => atom.value.get_to(&mut self.coord[0]),
-            20 => atom.value.get_to(&mut self.coord[1]),
-            30 => atom.value.get_to(&mut self.coord[2]),
-            39 => value.get_to(&mut self.thickness),
+            10 => super::parse_to(&atom.value, &mut self.coord[0]),
+            20 => super::parse_to(&atom.value, &mut self.coord[1]),
+            30 => super::parse_to(&atom.value, &mut self.coord[2]),
+            39 => super::parse_to(value, &mut self.thickness),
             210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
@@ -319,13 +319,13 @@ impl SetAtom for Line {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         let value = &atom.value;
         match atom.code {
-            10 => atom.value.get_to(&mut self.p1[0]),
-            20 => atom.value.get_to(&mut self.p1[1]),
-            30 => atom.value.get_to(&mut self.p1[2]),
-            11 => atom.value.get_to(&mut self.p2[0]),
-            21 => atom.value.get_to(&mut self.p2[1]),
-            31 => atom.value.get_to(&mut self.p2[2]),
-            39 => value.get_to(&mut self.thickness),
+            10 => super::parse_to(&atom.value, &mut self.p1[0]),
+            20 => super::parse_to(&atom.value, &mut self.p1[1]),
+            30 => super::parse_to(&atom.value, &mut self.p1[2]),
+            11 => super::parse_to(&atom.value, &mut self.p2[0]),
+            21 => super::parse_to(&atom.value, &mut self.p2[1]),
+            31 => super::parse_to(&atom.value, &mut self.p2[2]),
+            39 => super::parse_to(value, &mut self.thickness),
             210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
@@ -338,11 +338,11 @@ impl SetAtom for Circle {
     fn set_atom(&mut self, atom: &Atom) -> bool {
         let value = &atom.value;
         match atom.code {
-            10 => value.get_to(&mut self.center[0]),
-            20 => value.get_to(&mut self.center[1]),
-            30 => value.get_to(&mut self.center[2]),
-            40 => value.get_to(&mut self.radius),
-            39 => value.get_to(&mut self.thickness),
+            10 => super::parse_to(value, &mut self.center[0]),
+            20 => super::parse_to(value, &mut self.center[1]),
+            30 => super::parse_to(value, &mut self.center[2]),
+            40 => super::parse_to(value, &mut self.radius),
+            39 => super::parse_to(value, &mut self.thickness),
             210 => value.get_optional_coord_to(0, &mut self.extrusion_direction),
             220 => value.get_optional_coord_to(1, &mut self.extrusion_direction),
             230 => value.get_optional_coord_to(2, &mut self.extrusion_direction),
@@ -358,8 +358,8 @@ impl SetAtom for Arc {
         } else {
             let value = &atom.value;
             match atom.code {
-                50 => value.get_to(&mut self.start_degree),
-                51 => value.get_to(&mut self.end_degree),
+                50 => super::parse_to(value, &mut self.start_degree),
+                51 => super::parse_to(value, &mut self.end_degree),
                 _ => false,
             }
         }
@@ -407,11 +407,11 @@ impl SetAtom for LwPolylineBuilder {
         match atom.code {
             10 => {
                 self.flags.x = true;
-                value.get_to(&mut self.vertex.coord[0])
+                super::parse_to(value, &mut self.vertex.coord[0])
             }
             20 => {
                 self.flags.y = true;
-                value.get_to(&mut self.vertex.coord[1])
+                super::parse_to(value, &mut self.vertex.coord[1])
             }
             40 => {
                 self.flags.start_width = true;

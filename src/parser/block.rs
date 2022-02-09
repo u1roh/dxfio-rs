@@ -14,14 +14,14 @@ impl super::FromNode for BlockNode {
         };
         for atom in source.atoms.iter() {
             let _ = match atom.code {
-                8 => atom.value.get_to(&mut target.layer),
-                2 | 3 => atom.value.get_to(&mut target.block_name),
-                70 => atom.value.get_to(&mut target.block_flags),
-                10 => atom.value.get_to(&mut target.base_point[0]),
-                20 => atom.value.get_to(&mut target.base_point[1]),
-                30 => atom.value.get_to(&mut target.base_point[2]),
-                1 => atom.value.get_to(&mut target.xref_path_name),
-                4 => atom.value.get_to(&mut target.description),
+                8 => super::parse_to(&atom.value, &mut target.layer),
+                2 | 3 => super::parse_to(&atom.value, &mut target.block_name),
+                70 => super::parse_to(&atom.value, &mut target.block_flags),
+                10 => super::parse_to(&atom.value, &mut target.base_point[0]),
+                20 => super::parse_to(&atom.value, &mut target.base_point[1]),
+                30 => super::parse_to(&atom.value, &mut target.base_point[2]),
+                1 => super::parse_to(&atom.value, &mut target.xref_path_name),
+                4 => super::parse_to(&atom.value, &mut target.description),
                 _ => false,
             };
         }
